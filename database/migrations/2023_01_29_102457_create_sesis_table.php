@@ -14,7 +14,8 @@ class CreateSesisTable extends Migration
     public function up()
     {
         Schema::create('sesis', function (Blueprint $table) {
-            $table->string('nama_sesi',100)->primary();
+            $table->id();
+            $table->string('nama_sesi',100);
             $table->time('jam_mulai_sesi');
             $table->time('jam_selesai_sesi');
             $table->timestamps();

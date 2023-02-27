@@ -32,6 +32,11 @@ const store = createStore({
             data: {},
         },
 
+        keterangan_absensi: {
+            loading: false,
+            data: [],
+        },
+
         currentSiswa: {
             loading: false,
             data: {},
@@ -40,6 +45,12 @@ const store = createStore({
         currentJadwal: {
             loading: false,
             data: [],
+        },
+
+        notification: {
+            show: false,
+            type: "success",
+            message: "",
         },
     },
     getters: {},
@@ -84,6 +95,22 @@ const store = createStore({
                 })
                 .catch((err) => {
                     commit("setCurrentSiswaLoading", false);
+                    throw err;
+                });
+        },
+
+        keteranganAbsensiById({ commit }, id) {
+            commit("setKeteranganAbsensiLoading", true);
+            return axiosClient
+                .get(`/keteranganabsensibyid/${id}`)
+                .then((res) => {
+                    commit("setKeteranganAbsensi", res.data);
+                    commit("setKeteranganAbsensiLoading", false);
+                    return res;
+                })
+                .catch((err) => {
+                    commit("setKeteranganAbsensi", err.response.data);
+                    commit("setKeteranganAbsensiLoading", false);
                     throw err;
                 });
         },
@@ -168,6 +195,93 @@ const store = createStore({
                 commit("setUser", res.data);
             });
         },
+
+        getPDF({ commit }) {
+            commit("setKelasLoading", true);
+            return axiosClient
+                .get("/create-pdf-file", { responseType: "arraybuffer" })
+                .then((res) => {
+                    commit("setKelasLoading", false);
+                    let blob = new Blob([res.data], {
+                            type: "application/pdf",
+                        }),
+                        url = window.URL.createObjectURL(blob);
+
+                    let link = document.createElement("a");
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = "Rekapitulasi Presensi.pdf";
+                    link.click();
+                    window.open(link);
+                });
+        },
+
+        updateProfile({ commit }, currentGuru) {
+            let response;
+            commit("setCurrentGuruProfileLoading", true);
+            response = axiosClient
+                .put("/updateProfile", currentGuru)
+                .then((res) => {
+                    commit("setCurrentGuruProfileLoading", false);
+                    commit("notify", {
+                        type: "success",
+                        message: res.data.message,
+                    });
+                    return res;
+                })
+                .catch((err) => {
+                    commit("setCurrentGuruProfileLoading", false);
+                    commit("notify", {
+                        type: "failed",
+                        message: err.response.data.message,
+                    });
+                    throw err;
+                });
+        },
+
+        updatePassword({ commit }, data) {
+            let response;
+            commit("setCurrentGuruProfileLoading", true);
+            response = axiosClient
+                .post("/gantiPassword", data)
+                .then((res) => {
+                    commit("setCurrentGuruProfileLoading", false);
+                    commit("notify", {
+                        type: "success",
+                        message: res.data.message,
+                    });
+                    return res;
+                })
+                .catch((err) => {
+                    commit("setCurrentGuruProfileLoading", false);
+                    commit("notify", {
+                        type: "failed",
+                        message: err.response.data.error,
+                    });
+                    throw err;
+                });
+        },
+
+        absen({ commit }, data) {
+            let response;
+
+            response = axiosClient
+                .post("/absen", data)
+                .then((res) => {
+                    commit("notify", {
+                        type: "success",
+                        message: "Presensi Berhasil Dilakukan!",
+                    });
+
+                    return res;
+                })
+                .catch((err) => {
+                    commit("notify", {
+                        type: "failed",
+                        message: err.response.data.message,
+                    });
+                    throw err;
+                });
+        },
     },
     mutations: {
         logout: (state) => {
@@ -178,6 +292,7 @@ const store = createStore({
         setUser: (state, user) => {
             state.user.data = user;
         },
+
         setToken: (state, token) => {
             state.user.token = token;
             sessionStorage.setItem("TOKEN", token);
@@ -231,12 +346,28 @@ const store = createStore({
             state.sesi.data = sesi.data;
         },
 
+        setKeteranganAbsensiLoading: (state, loading) => {
+            state.keterangan_absensi.loading = loading;
+        },
+
+        setKeteranganAbsensi: (state, keterangan_absensi) => {
+            state.keterangan_absensi.data = keterangan_absensi.data;
+        },
+
         setCurrentJadwalLoading: (state, loading) => {
             state.currentJadwal.loading = loading;
         },
 
         setCurrentJadwal: (state, currentJadwal) => {
             state.currentJadwal.data = currentJadwal.data;
+        },
+        notify: (state, { message, type }) => {
+            state.notification.show = true;
+            state.notification.type = type;
+            state.notification.message = message;
+            setTimeout(() => {
+                state.notification.show = false;
+            }, 2500);
         },
     },
     modules: {},

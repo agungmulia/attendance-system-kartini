@@ -15,12 +15,12 @@ class CreateKelasTable extends Migration
     {
         Schema::create('kelas', function (Blueprint $table) {
             $table->string('kode_kelas',50)->primary();
-            $table->timestamps();
             $table->string('tingkat_kelas',3);
             $table->integer('nomor_kelas');
             $table->string('jurusan_kelas',100);
-            $table->string('wali_kelas',100);
-            $table->foreign('wali_kelas')->references('nip_guru')->on('gurus')->onUpdate('cascade')->onDelete('cascade')->index('nama_guru');
+            $table->string('nip_guru',100)->nullable();
+            $table->foreign('nip_guru')->references('nip_guru')->on('gurus')->onUpdate('cascade');
+            $table->timestamps();
         });
     }
 

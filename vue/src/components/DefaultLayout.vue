@@ -178,11 +178,13 @@
         </div>
         <router-view></router-view>
     </div>
+    <NotificationView />
 </template>
 
 <script>
 import { sharedConstant } from "../utils";
 import { useRouter } from "vue-router";
+import NotificationView from "./NotificationView.vue";
 import store from "../store/index.js";
 
 import {
@@ -201,7 +203,7 @@ import MenuIcon from "vue-material-design-icons/Menu.vue";
 import XIcon from "vue-material-design-icons/Close.vue";
 
 const navigation = [
-    { name: "Kelas", to: { name: "Dashboard" }, icon: HomeIcon, current: true },
+    { name: "Dashboard", to: { name: "Dashboard" }, icon: HomeIcon, current: true },
     {
         name: "Jadwal",
         to: { name: "Jadwal" },
@@ -226,6 +228,7 @@ export default {
         TransitionRoot,
         MenuIcon,
         XIcon,
+        NotificationView,
     },
     setup() {
         const sidebarOpen = sharedConstant;

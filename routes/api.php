@@ -4,7 +4,9 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\GuruController;
 use App\Http\Controllers\Api\JadwalController;
 use App\Http\Controllers\Api\SiswaController;
+use App\Http\Controllers\Api\AbsensiController;
 use App\Http\Controllers\Api\SesiController;
+use App\Http\Controllers\PDFController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,8 +21,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group(['middleware' => 'auth:api'], function (){
+Route::group(['middleware' => ['auth:api','guru']], function (){
     Route::post('/logout', [AuthController::class,'logout']);
+    Route::post('/gantiPassword', [AuthController::class,'changePassword']);
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
@@ -41,7 +44,19 @@ Route::group(['middleware' => 'auth:api'], function (){
     //siswa
     Route::get('showSiswaByKelas/{id}',[SiswaController::class,'showSiswaByKelas']);
     Route::get('siswa/{id}',[SiswaController::class,'show']);
+
+    Route::post('/absen', [AbsensiController::class,'absen']);
+
+    Route::get('create-pdf-file', [PDFController::class, 'index']);
+
+    Route::get('/keteranganabsensibyid/{id}', [AbsensiController::class,'keteranganAbsensiById']);
+
 });
 
-Route::post('/register', [AuthController::class,'register']);
+Route::group(['middleware' => ['auth:api','siswa']], function (){
+   
+});
+
+
 Route::post('/login', [AuthController::class,'login']);
+Route::post('/loginsiswa', [AuthController::class,'loginSiswa']);

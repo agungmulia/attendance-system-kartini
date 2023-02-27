@@ -15,7 +15,10 @@ class CreateGurusTable extends Migration
     {
         Schema::create('gurus', function (Blueprint $table) {
             $table->string('nip_guru',100)->primary();
-            $table->string('nama_guru',100)->index();
+            $table->string('foto_guru')->nullable();
+            $table->string('nama_guru',100);
+            $table->string('tempat_lahir_guru',100);
+            $table->date('tanggal_lahir_guru');
             $table->string('alamat_guru',255);
             $table->string('jenis_kelamin_guru',15);
             $table->string('email_guru',100);

@@ -4,15 +4,183 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use App\Models\Siswa;
+use App\Models\User;
+use App\Models\Absensi;
+use Validator;
+use App\Models\Keterangan_Absensi;
+use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Resources\siswaResource;
 
 class SiswaController extends Controller
 {
+    public function update(Request $request,$nis_siswa)
+    {
+        $updateData = $request->all();
+        $validate = Validator::make($updateData, [
+            'nis_siswa' => 'required',
+            'nama_siswa' => 'required',
+            'tempat_lahir_siswa' => 'required',
+            'tanggal_lahir_siswa' => 'required',
+            'alamat_siswa' => 'required',
+            'jenis_kelamin_siswa' => 'required',
+            'email_siswa'=>'required',
+            'no_telp_siswa'=>'required|numeric',
+        ]);
+        
+        if($validate->fails())
+            return response(['message' => $validate->errors()],400);
+        
+        
+        $email_siswa = Siswa::where('siswas.nis_siswa',$nis_siswa )->value('email_siswa');
+        $User = User::select('users.*')
+            ->where('users.email',$email_siswa )
+            ->first();
+        $User->email = $updateData['email_siswa'];
+        $User->name = $updateData['nama_siswa'];
+        $User->save();
+        
+        $Siswa = Siswa::select('siswas.*')
+            ->where('siswas.nis_siswa',$nis_siswa )
+            ->first();
+        if ($Siswa->foto_siswa!=null) {
+                $absolutePath = public_path($Guru->foto_siswa);
+                File::delete($absolutePath);
+        }
+         // Check if image was given and save on local file system
+        if (isset($updateData['foto_siswa'])) {
+            $relativePath  = $this->saveImage($updateData['foto_siswa']);
+            $Siswa->foto_siswa = $relativePath; 
+        }
+        $Siswa->nis_siswa = $updateData['nis_siswa'];
+        $Siswa->nama_siswa = $updateData['nama_siswa'];
+        $Siswa->tempat_lahir_siswa = $updateData['tempat_lahir_siswa'];
+        $Siswa->tanggal_lahir_siswa = $updateData['tanggal_lahir_siswa'];
+        $Siswa->alamat_siswa = $updateData['alamat_siswa'];
+        $Siswa->kode_kelas = $updateData['kode_kelas'];
+        $Siswa->jenis_kelamin_siswa = $updateData['jenis_kelamin_siswa'];
+        $Siswa->email_siswa = $updateData['email_siswa'];
+        $Siswa->no_telp_siswa = $updateData['no_telp_siswa'];
+        $Siswa->password_siswa =bcrypt($updateData['nis_siswa']);
+        $Siswa->save();
+
+        $Absensi = Absensi::select('absensis.*')
+            ->where('absensis.nis_siswa',$nis_siswa )
+            ->first();
+        $Absensi->hadir_absensi = $updateData['hadir_absensi'];
+        $Absensi->izin_absensi = $updateData['izin_absensi'];
+        $Absensi->alpha_absensi =$updateData['alpha_absensi'];
+        $Absensi->save();
+        return response([
+            'message' => 'Tambah siswa berhasil!',
+            'data' =>$Siswa
+        ],200);      
+    }
+
+    public function searchFilterSiswa(Request $request){
+        $query = $request->get('query');
+        $data = Siswa::where('nama_siswa', 'like', '%'.$query.'%')
+            ->orWhere('email_siswa', 'like', '%'.$query.'%')
+            ->paginate(10);
+        return response()->json($data);
+    }
+
+
+    public function store(Request $request)
+    {
+        $storeData = $request->all();
+        $validate = Validator::make($storeData, [
+            'nis_siswa' => 'required',
+            'nama_siswa' => 'required',
+            'tempat_lahir_siswa' => 'required',
+            'tanggal_lahir_siswa' => 'required',
+            'alamat_siswa' => 'required',
+            'jenis_kelamin_siswa' => 'required',
+            'email_siswa'=>'required',
+            'no_telp_siswa'=>'required|numeric',
+        ]);
+        
+        if($validate->fails())
+            return response(['message' => $validate->errors()],400);
+        
+        
+        $Siswa = new Siswa();
+        // Check if image was given and save on local file system
+        if (isset($storeData['foto_guru'])) {
+            $relativePath  = $this->saveImage($storeData['foto_guru']);
+            $Siswa->foto_siswa = $relativePath; 
+        }
+        $Siswa->nis_siswa = $storeData['nis_siswa'];
+        $Siswa->nama_siswa = $storeData['nama_siswa'];
+        $Siswa->tempat_lahir_siswa = $storeData['tempat_lahir_siswa'];
+        $Siswa->tanggal_lahir_siswa = $storeData['tanggal_lahir_siswa'];
+        $Siswa->alamat_siswa = $storeData['alamat_siswa'];
+        $Siswa->kode_kelas = $storeData['kode_kelas'];
+        $Siswa->jenis_kelamin_siswa = $storeData['jenis_kelamin_siswa'];
+        $Siswa->email_siswa = $storeData['email_siswa'];
+        $Siswa->no_telp_siswa = $storeData['no_telp_siswa'];
+        $Siswa->password_siswa =bcrypt($storeData['nis_siswa']);
+        $Siswa->save();
+
+        $dataUser['email'] = $storeData['email_siswa'];
+        $dataUser['name'] = $storeData['nama_siswa'];
+        $dataUser['is_admin'] = 3;
+        $dataUser['password'] = bcrypt($storeData['nis_siswa']);
+        $User = User::create($dataUser);
+
+        $dataAbsensi['nis_siswa'] = $storeData['nis_siswa'];
+        $Absensi = Absensi::create($dataAbsensi);
+        return response([
+            'message' => 'Tambah siswa berhasil!',
+            'data' =>$Siswa
+        ],200);      
+    }
+
+    public function destroy($nis_siswa)
+    {
+        $Email_siswa = Siswa::where('siswas.nis_siswa',$nis_siswa )->value('email_siswa');
+        $Siswa = Siswa::where('siswas.nis_siswa',$nis_siswa )->first();
+
+        $User = User::where('users.email',$Email_siswa )->first();
+            
+        if(is_null($Siswa)){
+            return response([
+                'message' => 'Siswa Tidak Ditemukan',
+                'data' => null
+            ],404);
+        }
+
+        if($User->is_admin){
+            return response([
+                'message' => 'Siswa adalah Admin, Tidak bisa dihapus!',
+                'data' => null
+            ],404);
+        }
+
+        $User->delete();
+
+        if($Siswa->delete()){
+            return response([
+                'message' => 'Delete Siswa Success',
+                'data' =>$Siswa
+            ],200);
+        }
+       
+        return response([
+            'message' => 'Delete Siswa Failed',
+            'data' => null,
+        ],400);  
+    }
+
      public function showSiswaByKelas($kode_kelas)
     {
-       $Siswa = Siswa::select('siswas.*')
+       $Siswa = Siswa::join('absensis', 'siswas.nis_siswa', '=', 'absensis.nis_siswa')
             ->where('siswas.kode_kelas',$kode_kelas )
-            ->select('siswas.nama_siswa')
+            ->select('siswas.nis_siswa','siswas.nama_siswa','absensis.updated_at','absensis.status_absensi')
             ->get();
 
         if(count($Siswa)>0){
@@ -26,16 +194,18 @@ class SiswaController extends Controller
             'data' => null
         ],400);
     }
+
+    
     
     public function index()
     {
-        $Siswa = Siswa::all();
+        $Siswa = siswaResource::collection(Siswa::leftJoin('kelas', 'siswas.kode_kelas','=','kelas.kode_kelas')
+            ->select('siswas.*','kelas.tingkat_kelas','kelas.jurusan_kelas','kelas.nomor_kelas')
+            ->orderBy('siswas.nama_siswa')
+            ->paginate(10));
 
         if(count($Siswa)>0){
-            return response([
-                'message' => 'Retrieve All Success',
-                'data' =>$Siswa
-            ],200);
+            return $Siswa;
         }
         return response([
             'message' => 'Empty',
@@ -43,14 +213,51 @@ class SiswaController extends Controller
         ],400);
     }
 
+    private function saveImage($image)
+    {
+        // Check if image is valid base64 string
+        if (preg_match('/^data:image\/(\w+);base64,/', $image, $type)) {
+            // Take out the base64 encoded text without mime type
+            $image = substr($image, strpos($image, ',') + 1);
+            // Get file extension
+            $type = strtolower($type[1]); // jpg, png, gif
+
+            // Check if file is an image
+            if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png'])) {
+                throw new \Exception('invalid image type');
+            }
+            $image = str_replace(' ', '+', $image);
+            $image = base64_decode($image);
+
+            if ($image === false) {
+                throw new \Exception('base64_decode failed');
+            }
+        } else {
+            throw new \Exception('did not match data URI with image data');
+        }
+
+        $dir = 'images/';
+        $file = Str::random() . '.' . $type;
+        $absolutePath = public_path($dir);
+        $relativePath = $dir . $file;
+        if (!File::exists($absolutePath)) {
+            File::makeDirectory($absolutePath, 0755, true);
+        }
+        file_put_contents($relativePath, $image);
+
+        return $relativePath;
+    }
+
     public function show($nis_siswa){
-        $Siswa = Siswa::select('siswas.*')
+        $Siswa = Siswa::leftJoin('kelas', 'siswas.kode_kelas', '=', 'kelas.kode_kelas')
+                    ->leftJoin('absensis', 'siswas.nis_siswa', '=', 'absensis.nis_siswa')
+                    ->select('siswas.*','kelas.tingkat_kelas','kelas.jurusan_kelas','kelas.nomor_kelas','absensis.hadir_absensi','absensis.izin_absensi','absensis.alpha_absensi')
                     ->where('siswas.nis_siswa',$nis_siswa )
-                    ->get();
+                    ->first();
         if(!is_null($Siswa)){
             return response([
                 'message' => 'Mengambil Data Siswa Berhasil',
-                'data' =>$Siswa
+                'data' =>new siswaResource($Siswa)
             ],200);
         }
         return response([

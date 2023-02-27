@@ -13,11 +13,11 @@ class CreateKeteranganAbsensisTable extends Migration
      */
     public function up()
     {
-        Schema::create('keterangan__absensis', function (Blueprint $table) {
+        Schema::create('keterangan_absensis', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('id_absensi');
+            $table->foreign('id_absensi')->references('id')->on('absensis')->onDelete('cascade')->onUpdate('cascade');
             $table->string('keterangan_absensi',255);
-            $table->string('siswa',100);
-            $table->foreign('siswa')->references('nis_siswa')->on('siswas')->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -29,6 +29,6 @@ class CreateKeteranganAbsensisTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('keterangan__absensis');
+        Schema::dropIfExists('keterangan_absensis');
     }
 }
