@@ -195,20 +195,42 @@ function tambahSesiConfirmation() {
     if (route.params.id) {
         confirmationUpdate.value = true
     } else {
-        store.dispatch("tambahSesi", model.value).then(() => {
-            store.dispatch("getSesi");
-            router.push({
-                name: "Sesi",
-            });
+        store.dispatch("tambahSesi", model.value).then(res => {
+              if (res.request.status == 200) {
+                router.push({
+                    name: "Sesi",
+                });
+                store.commit("notify", {
+                    type: "success",
+                    message: 'Tambah data sesi berhasil!',
+                });
+            } else {
+                store.commit("notify", {
+                    type: "error",
+                    message: res.response.data.message,
+                });
+            }
         });
     }
 }
 
 function updateSesi() {
-    store.dispatch("updateSesi", model.value).then((data) => {
-        router.push({
-            name: "Sesi",
-        });
+    store.dispatch("updateSesi", model.value).then(res => {
+       if (res.request.status == 200) {
+            router.push({
+                name: "Sesi",
+            });
+            store.commit("notify", {
+                type: "success",
+                message: 'Ubah data sesi berhasil!',
+            });
+        } else {
+            confirmationUpdate.value = false
+            store.commit("notify", {
+                type: "error",
+                message: res.response.data.message,
+            });
+        }
     });
 }
 

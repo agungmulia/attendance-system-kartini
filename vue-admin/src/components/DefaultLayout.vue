@@ -202,6 +202,7 @@ import HumanMaleBoardIcon from "vue-material-design-icons/HumanMaleBoard.vue";
 import AccountTie from "vue-material-design-icons/AccountTie.vue";
 import ClockIcon from "vue-material-design-icons/Clock.vue";
 import HomeIcon from "vue-material-design-icons/HomeOutline.vue";
+import BallotIcon from 'vue-material-design-icons/BallotOutline.vue'
 import HomeAccountIcon from "vue-material-design-icons/HomeAccount.vue";
 import MenuIcon from "vue-material-design-icons/Menu.vue";
 import XIcon from "vue-material-design-icons/Close.vue";
@@ -243,6 +244,12 @@ const navigation = [
         icon: CalendarIcon,
         current: false,
     },
+    {
+        name: "Presensi",
+        to: { name: "Presensi" },
+        icon: BallotIcon,
+        current: false,
+    },
 ];
 
 export default {
@@ -253,6 +260,7 @@ export default {
         DialogOverlay,
         TransitionChild,
         TransitionRoot,
+        BallotIcon,
         MenuIcon,
         XIcon,
         NotificationView,

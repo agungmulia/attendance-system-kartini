@@ -16,7 +16,6 @@ class Keterangan_Absensi extends Model
     protected $fillable = [
         'id_absensi',
         'keterangan_absensi',
-  
     ];
 
 

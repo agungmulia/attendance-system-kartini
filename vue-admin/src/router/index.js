@@ -12,6 +12,7 @@ import Guru from "../views/Guru.vue";
 import Siswa from "../views/Siswa.vue";
 import Kelas from "../views/Kelas.vue";
 import Sesi from "../views/Sesi.vue";
+import Presensi from "../views/Presensi.vue";
 
 import GuruForm from "../views/GuruForm.vue";
 import SiswaForm from "../views/SiswaForm.vue";
@@ -107,6 +108,11 @@ const routes = [
                 path: "/tambahsesi",
                 name: "TambahSesi",
                 component: SesiForm,
+            },
+            {
+                path: "/presensi",
+                name: "Presensi",
+                component: Presensi,
             },
         ],
     },

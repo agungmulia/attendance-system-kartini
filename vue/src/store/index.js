@@ -115,6 +115,22 @@ const store = createStore({
                 });
         },
 
+        keteranganPresensiById({ commit }, id) {
+            commit("setKeteranganAbsensiLoading", true);
+            return axiosClient
+                .get(`/keteranganpresensibyid/${id}`)
+                .then((res) => {
+                    commit("setKeteranganAbsensi", res.data);
+                    commit("setKeteranganAbsensiLoading", false);
+                    return res;
+                })
+                .catch((err) => {
+                    commit("setKeteranganAbsensi", err.response.data);
+                    commit("setKeteranganAbsensiLoading", false);
+                    throw err;
+                });
+        },
+
         getGuruProfile({ commit }) {
             commit("setCurrentGuruProfileLoading", true);
             return axiosClient
@@ -266,6 +282,28 @@ const store = createStore({
 
             response = axiosClient
                 .post("/absen", data)
+                .then((res) => {
+                    commit("notify", {
+                        type: "success",
+                        message: "Presensi Berhasil Dilakukan!",
+                    });
+
+                    return res;
+                })
+                .catch((err) => {
+                    commit("notify", {
+                        type: "failed",
+                        message: err.response.data.message,
+                    });
+                    throw err;
+                });
+        },
+
+        presensi({ commit }, data) {
+            let response;
+
+            response = axiosClient
+                .post("/presensi", data)
                 .then((res) => {
                     commit("notify", {
                         type: "success",

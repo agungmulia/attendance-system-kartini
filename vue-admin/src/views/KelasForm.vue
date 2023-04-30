@@ -195,20 +195,42 @@ function tambahKelasConfirmation() {
     if (route.params.id) {
         confirmationUpdate.value = true
     } else {
-        store.dispatch("tambahKelas", model.value).then(() => {
-            store.dispatch("getKelas");
-            router.push({
-                name: "Kelas",
-            });
+        store.dispatch("tambahKelas", model.value).then(res => {
+            if (res.request.status == 200) {
+                router.push({
+                    name: "Kelas",
+                });
+                store.commit("notify", {
+                    type: "success",
+                    message: 'Tambah data kelas berhasil!',
+                });
+            } else {
+                store.commit("notify", {
+                    type: "error",
+                    message: res.response.data.message,
+                });
+            }
         });
     }
 }
 
 function updateKelas() {
-    store.dispatch("updateKelas", model.value).then((data) => {
-        router.push({
-            name: "Kelas",
-        });
+    store.dispatch("updateKelas", model.value).then(res => {
+        if (res.request.status == 200) {
+            router.push({
+                name: "Kelas",
+            });
+            store.commit("notify", {
+                type: "success",
+                message: 'Ubah data kelas berhasil!',
+            });
+        } else {
+            confirmationUpdate.value = false
+            store.commit("notify", {
+                type: "error",
+                message: res.response.data.message,
+            });
+        }
     });
 }
 

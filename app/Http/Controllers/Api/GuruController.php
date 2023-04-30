@@ -23,7 +23,6 @@ class GuruController extends Controller
     public function update(Request $request,$nip_guru)
     {
         $updateData = $request->all();
-
         $validate = Validator::make($updateData, [
             'nip_guru' => 'required',
             'nama_guru' => 'required',
@@ -36,7 +35,6 @@ class GuruController extends Controller
         if($validate->fails())
             return response(['message' => $validate->errors()],400);
 
-  
         $wali_kelas = Kelas::where('kelas.nip_guru',$nip_guru )->value('nip_guru');
         if($wali_kelas==null){
             Kelas::where('kelas.kode_kelas',$updateData['kode_kelas'] )
@@ -56,10 +54,7 @@ class GuruController extends Controller
                 'updated_at' => Carbon::today()
             ]);
         }
-        
-        
-         
-        
+            
         $email_guru = Guru::where('gurus.nip_guru',$nip_guru )->value('email_guru');
         $User = User::select('users.*')
             ->where('users.email',$email_guru )
@@ -79,8 +74,6 @@ class GuruController extends Controller
         if (isset($updateData['foto_guru'])) {
             $relativePath  = $this->saveImage($updateData['foto_guru']);
             $Guru->foto_guru = $relativePath; 
-
-            
         }
         $Guru->nip_guru = $updateData['nip_guru'];
         $Guru->nama_guru = $updateData['nama_guru'];
@@ -91,8 +84,6 @@ class GuruController extends Controller
         $Guru->email_guru = $updateData['email_guru'];
         $Guru->no_telp_guru = $updateData['no_telp_guru'];
         $Guru->save();
-
-        
         if($Guru->save()){
             return response([
                 'message' => 'Update data guru berhasil!',
@@ -116,13 +107,10 @@ class GuruController extends Controller
         if($validate->fails())
             return response(['message' => $validate->errors()],400);
 
- 
-            
-            
         $Guru = new Guru();
         // Check if image was given and save on local file system
-        if (isset($updateData['foto_guru'])) {
-            $relativePath  = $this->saveImage($updateData['foto_guru']);
+        if (isset($storeData['foto_guru'])) {
+            $relativePath  = $this->saveImage($storeData['foto_guru']);
             $Guru->foto_guru = $relativePath; 
         }
         $Guru->nip_guru = $storeData['nip_guru'];
@@ -183,25 +171,22 @@ class GuruController extends Controller
         }
 
         $updateData = $request->all();
-
-        
         $validate = Validator::make($updateData,[
             'no_telp_guru'=>'numeric'
         ]);
 
         if($validate->fails())
             return response(['message' => $validate->errors()],400);
-
-        if ($foto_guru!=null) {
-                $absolutePath = public_path($Guru->foto_guru);
-                File::delete($absolutePath);
-        }
+  
          // Check if image was given and save on local file system
         if (isset($updateData['foto_guru'])) {
+            if ($foto_guru!=null) {
+                $absolutePath = public_path($Guru->foto_guru);
+                File::delete($absolutePath);
+            }
             $relativePath  = $this->saveImage($updateData['foto_guru']);
             $Guru->foto_guru = $relativePath; 
         }
-
         $Guru->alamat_guru = $updateData['alamat_guru'];
         $Guru->no_telp_guru = $updateData['no_telp_guru'];
         
@@ -211,7 +196,6 @@ class GuruController extends Controller
                 'data' => $Guru
             ],200);
         }
-
         return response([
             'message' => 'Update Profil Gagal!',
             'data' => null,
@@ -277,10 +261,17 @@ class GuruController extends Controller
 
     public function searchFilterGuru(Request $request){
         $query = $request->get('query');
-        $data = Guru::where('nama_guru', 'like', '%'.$query.'%')
+        $GuruData = Guru::leftJoin('kelas', 'gurus.nip_guru','=','kelas.nip_guru')
+            ->select('gurus.*','kelas.tingkat_kelas','kelas.jurusan_kelas','kelas.nomor_kelas')
+            ->orderBy('gurus.nama_guru')
+            ->where('nama_guru', 'like', '%'.$query.'%')
             ->orWhere('email_guru', 'like', '%'.$query.'%')
             ->paginate(10);
-        return response()->json($data);
+        $Guru = GuruResource::collection($GuruData);
+        
+        if(count($Guru)>0){
+            return $Guru;
+        }
     }
 
     public function cariGuru($nip_guru)
@@ -307,9 +298,9 @@ class GuruController extends Controller
         $user_email = Auth::user()->email;
         $Guru = Guru::where('email_guru',$user_email )->value('nip_guru');
         $Kelas = Kelas::where('nip_guru' , $Guru )->value('kode_kelas');
-        $Siswa = Siswa::join('absensis','siswas.nis_siswa','absensis.nis_siswa')
+        $Siswa = Siswa::join('presensis','siswas.nis_siswa','presensis.nis_siswa')
             ->where('siswas.kode_kelas',$Kelas )
-            ->select('siswas.nis_siswa','siswas.nama_siswa','absensis.hadir_absensi','absensis.izin_absensi','absensis.alpha_absensi')
+            ->select('siswas.nis_siswa','siswas.nama_siswa','presensis.total_hadir_presensi','presensis.total_izin_presensi','presensis.total_alpha_presensi')
             ->get();
         if(!is_null($Siswa)){
             return response([
@@ -355,13 +346,13 @@ class GuruController extends Controller
 
         if($Guru->delete()){
             return response([
-                'message' => 'Delete Guru Success',
+                'message' => 'Hapus Guru Berhasil',
                 'data' =>$Guru
             ],200);
         }
        
         return response([
-            'message' => 'Delete Guru Failed',
+            'message' => 'Hapus Guru Gagal',
             'data' => null,
         ],400);  
     }

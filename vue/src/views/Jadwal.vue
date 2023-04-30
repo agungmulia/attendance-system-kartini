@@ -30,6 +30,7 @@
                         </td>
                         <td class="py-1 px-1 md:py-4 md:px-4">
                             <span
+                                class="grid"
                                 v-for="value in jadwalSenin"
                                 :key="value.sesi"
                             >
@@ -40,6 +41,7 @@
                         </td>
                         <td class="py-1 px-1 md:py-4 md:px-4">
                             <span
+                                class="grid"
                                 v-for="value in jadwalSelasa"
                                 :key="value.sesi"
                             >
@@ -49,7 +51,9 @@
                             </span>
                         </td>
                         <td class="py-1 px-1 md:py-4 md:px-4">
-                            <span v-for="value in jadwalRabu" :key="value.sesi">
+                            <span  
+                                class="grid"
+                                v-for="value in jadwalRabu" :key="value.sesi">
                                 <span v-if="value.sesi == item.id">
                                     {{ value.mata_pelajaran_jadwal }}
                                 </span>
@@ -58,6 +62,7 @@
                         <td class="py-1 px-1 md:py-4 md:px-4">
                             <span
                                 v-for="value in jadwalKamis"
+                                class="grid"
                                 :key="value.sesi"
                             >
                                 <span v-if="value.sesi == item.id">
@@ -68,6 +73,7 @@
                         <td class="py-1 px-1 md:py-4 md:px-4">
                             <span
                                 v-for="value in jadwalJumat"
+                                class="grid"
                                 :key="value.sesi"
                             >
                                 <span v-if="value.sesi == item.id">

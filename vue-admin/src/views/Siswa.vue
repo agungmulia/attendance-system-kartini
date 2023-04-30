@@ -25,7 +25,7 @@
                                     placeholder="Cari Siswa"
                                     class="focus:ring-red-500 focus:border-red-500 block w-full shadow-sm  border-gray-300 rounded-md"
                                 />
-                                <button type="button" class=" px-5 py-2 h-fit  bg-red-600 hover:bg-red-900 duration-200 rounded-lg text-white">Cari</button>
+                                <button @click.prevent="cariSiswa" type="button" class=" px-5 py-2 h-fit  bg-red-600 hover:bg-red-900 duration-200 rounded-lg text-white">Cari</button>
                             </div>
                         <div
                             class="overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5 rounded-lg"
@@ -73,6 +73,12 @@
                                         >
                                             Nomor Telepon
                                         </th>
+                                        <th
+                                                scope="col"
+                                                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                            >
+                                                Nomor Telepon Orang Tua
+                                            </th>
                                         <th
                                             scope="col"
                                             class="relative py-3.5 pl-3 pr-4 sm:pr-6"
@@ -178,6 +184,14 @@
                                                             person.no_telp_siswa
                                                         }}</span
                                                     >
+                                                    <span class="text-xs">
+                                                            Nomor Telepon Orang Tua:</span
+                                                        >
+                                                        <span class="text-blue-900">
+                                                            {{
+                                                                person.no_telp_orang_tua
+                                                            }}</span
+                                                        >
                                                 </div>
                                                 <div
                                                     class="flex items-center mt-2 space-x-2"
@@ -240,6 +254,11 @@
                                         >
                                             {{ person.no_telp_siswa }}
                                         </td>
+                                        <td
+                                                class="px-3 py-4 text-sm text-gray-500 hidden lg:table-cell"
+                                            >
+                                                {{ person.no_telp_orang_tua }}
+                                            </td>
                                         <td
                                             class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 hidden lg:table-cell"
                                         >
@@ -364,6 +383,9 @@ function getForPage(ev, link) {
         return;
     }
     store.dispatch("getGuru", { url: link.url });
+}
+function cariSiswa(){
+    store.dispatch("searchFilterSiswa", search.value);
 }
 let search = ref("");
 

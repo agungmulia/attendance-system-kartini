@@ -16,10 +16,10 @@ class GuruMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (auth()->user() && ((auth()->user()->is_admin) == 0)) {
+        if (auth()->user() && (((auth()->user()->is_admin) == 0) || ((auth()->user()->is_admin) == 1))) {
             return $next($request);
         }
 
-        return response()->json(['message' => 'Anda tidak mendapat otorisasi untuk mengakses sistem ini'], 403);
+        return response()->json(['message' => 'Anda tidak mendapat otorisasi untuk mengakses sistem ini guru'], 403);
     }
 }

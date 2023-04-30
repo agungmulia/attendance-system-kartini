@@ -16,6 +16,23 @@ use Validator;
 
 class JadwalController extends Controller
 {
+    public function searchFilterJadwal(Request $request){
+        $query = $request->get('query');
+        $Jadwal = Jadwal::leftJoin('siswas', 'jadwals.kode_kelas','=','siswas.kode_kelas')
+            ->leftJoin('kelas','jadwals.kode_kelas','=','kelas.kode_kelas')
+            ->leftJoin('gurus','jadwals.nip_guru','=','gurus.nip_guru')
+            ->leftJoin('sesis','jadwals.sesi','=','sesis.id')
+            ->select('sesis.jam_mulai_sesi','sesis.jam_selesai_sesi','jadwals.kode_jadwal','jadwals.kode_kelas','sesis.nama_sesi','jadwals.hari_jadwal','jadwals.mata_pelajaran_jadwal','kelas.nomor_kelas','kelas.tingkat_kelas','kelas.jurusan_kelas', 'gurus.nama_guru',DB::raw("count(siswas.nis_siswa) as total_murid"))
+            ->groupBy('sesis.jam_mulai_sesi','sesis.jam_selesai_sesi','gurus.nama_guru','jadwals.kode_kelas','sesis.nama_sesi','jadwals.hari_jadwal','jadwals.mata_pelajaran_jadwal','kelas.nomor_kelas','kelas.tingkat_kelas','kelas.jurusan_kelas','jadwals.kode_jadwal')
+            ->where('mata_pelajaran_jadwal', 'like', '%'.$query.'%')
+            ->orWhere('hari_jadwal', 'like', '%'.$query.'%')
+            ->paginate(10);
+
+        if(count($Jadwal)>0){
+            return $Jadwal;
+        }
+    }
+
     public function destroy($kode_jadwal)
     {
         $Jadwal = Jadwal::where('jadwals.kode_jadwal',$kode_jadwal )->first();
@@ -54,6 +71,13 @@ class JadwalController extends Controller
         
         if($validate->fails())
             return response(['message' => $validate->errors()],400);
+
+        $Cek_jadwal = Jadwal::select('jadwals.*')
+            ->where([['jadwals.hari_jadwal',$updateData['hari_jadwal']],['jadwals.sesi',$updateData['sesi']],['jadwals.nip_guru',$updateData['nip_guru']]])
+            ->first();
+        if($Cek_jadwal!=null){
+            return response(['message' => 'Waktu jadwal sudah ada, pastikan hari dan sesi guru tidak bertabrakan!'],400);
+        }
         
         
         $Jadwal = Jadwal::select('jadwals.*')
@@ -66,7 +90,7 @@ class JadwalController extends Controller
         $Jadwal->nip_guru = $updateData['nip_guru'];
         if($Jadwal->save()){
             return response([
-                'message' => 'Tambah Jadwal berhasil!',
+                'message' => 'Ubah jadwal berhasil!',
                 'data' =>$Jadwal
             ],200);      
         }
@@ -88,7 +112,14 @@ class JadwalController extends Controller
             return response(['message' => $validate->errors()],400);
         
 
-	    $kode_jadwal = IdGenerator::generate(['table' => 'jadwals','field'=>'kode_jadwal', 'length' => 18, 'prefix' => 'JDW-'.$storeData['nip_guru']]);
+	    $kode_jadwal = IdGenerator::generate(['table' => 'jadwals','field'=>'kode_jadwal', 'length' => 18, 'prefix' => 'JDW-'.$storeData['nip_guru'],'reset_on_prefix_change' => true]);
+                                
+        $Cek_jadwal = Jadwal::select('jadwals.*')
+            ->where([['jadwals.hari_jadwal',$storeData['hari_jadwal']],['jadwals.sesi',$storeData['sesi']],['jadwals.nip_guru',$storeData['nip_guru']]])
+            ->first();
+        if($Cek_jadwal!=null){
+            return response(['message' => 'Waktu jadwal sudah ada, pastikan hari dan sesi guru tidak bertabrakan!'],400);
+        }
 
         $Jadwal = new Jadwal();
         $Jadwal->kode_jadwal = $kode_jadwal;
@@ -142,7 +173,7 @@ class JadwalController extends Controller
         $nip_guru = Guru::where('email_guru', $user_email)->value('nip_guru');
         $Jadwal = Jadwal::leftJoin('siswas', 'jadwals.kode_kelas','=','siswas.kode_kelas')
             ->leftJoin('kelas','jadwals.kode_kelas','=','kelas.kode_kelas')
-            ->leftJoin('gurus','jadwals.nip_guru','=','gurus.nip_guru')
+            ->leftJoin('gurus','kelas.nip_guru','=','gurus.nip_guru')
             ->leftJoin('sesis','jadwals.sesi','=','sesis.id')
             ->where('jadwals.nip_guru','=', $nip_guru)    
             ->select('sesis.jam_mulai_sesi','sesis.jam_selesai_sesi','jadwals.kode_jadwal','jadwals.kode_kelas','sesis.nama_sesi','jadwals.hari_jadwal','jadwals.mata_pelajaran_jadwal','kelas.nomor_kelas','kelas.tingkat_kelas','kelas.jurusan_kelas', 'gurus.nama_guru',DB::raw("count(siswas.nis_siswa) as total_murid"))
@@ -167,15 +198,12 @@ class JadwalController extends Controller
             ->leftJoin('kelas','jadwals.kode_kelas','=','kelas.kode_kelas')
             ->leftJoin('gurus','jadwals.nip_guru','=','gurus.nip_guru')
             ->leftJoin('sesis','jadwals.sesi','=','sesis.id')
-            ->select('sesis.jam_mulai_sesi','sesis.jam_selesai_sesi','jadwals.kode_jadwal','jadwals.kode_kelas','jadwals.sesi','jadwals.hari_jadwal','jadwals.mata_pelajaran_jadwal','kelas.nomor_kelas','kelas.tingkat_kelas','kelas.jurusan_kelas', 'gurus.nama_guru',DB::raw("count(siswas.nis_siswa) as total_murid"))
-            ->groupBy('sesis.jam_mulai_sesi','sesis.jam_selesai_sesi','gurus.nama_guru','jadwals.kode_kelas','jadwals.sesi','jadwals.hari_jadwal','jadwals.mata_pelajaran_jadwal','kelas.nomor_kelas','kelas.tingkat_kelas','kelas.jurusan_kelas','jadwals.kode_jadwal')
-            ->get();
+            ->select('sesis.jam_mulai_sesi','sesis.jam_selesai_sesi','jadwals.kode_jadwal','jadwals.kode_kelas','sesis.nama_sesi','jadwals.hari_jadwal','jadwals.mata_pelajaran_jadwal','kelas.nomor_kelas','kelas.tingkat_kelas','kelas.jurusan_kelas', 'gurus.nama_guru',DB::raw("count(siswas.nis_siswa) as total_murid"))
+            ->groupBy('sesis.jam_mulai_sesi','sesis.jam_selesai_sesi','gurus.nama_guru','jadwals.kode_kelas','sesis.nama_sesi','jadwals.hari_jadwal','jadwals.mata_pelajaran_jadwal','kelas.nomor_kelas','kelas.tingkat_kelas','kelas.jurusan_kelas','jadwals.kode_jadwal')
+            ->paginate(10);
 
         if(count($Jadwal)>0){
-            return response([
-                'message' => 'Retrieve All Success',
-                'data' =>$Jadwal
-            ],200);
+            return $Jadwal;
         }
         return response([
             'message' => 'Empty',

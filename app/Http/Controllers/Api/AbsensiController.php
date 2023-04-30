@@ -17,7 +17,6 @@ class AbsensiController extends Controller
         foreach ($tableData as $item) {
             // process the data as necessary
             $absen = $item['absen'];
-            $itemAll = [$item['keterangan_absensi'],$item['nis_siswa']];
             $hari_absen = Carbon::parse($item['updated_at'])->format("Y-m-d");
             $hari_ini = Carbon::today()->format("Y-m-d");
             $nis_siswa = $item['nis_siswa'];
@@ -97,6 +96,8 @@ class AbsensiController extends Controller
                             'status_absensi' => 'Izin',
                             'updated_at' => Carbon::today()
                         ]);
+
+                    $keterangan = Keterangan_Absensi::insert($data_keterangan_absensi);
                 }else if(Carbon::parse($hari_absen)->equalTo(Carbon::parse($hari_ini))){
                     if($status_absensi == 'Hadir'){
                         if($hadir_absensi>0){
@@ -214,9 +215,7 @@ class AbsensiController extends Controller
                         ]);
                     }
                 }
-            }
-
-            
+            }    
         }
     }
 

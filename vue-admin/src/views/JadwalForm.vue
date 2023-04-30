@@ -255,20 +255,42 @@ function tambahJadwalConfirmation() {
     if (route.params.id) {
         confirmationUpdate.value = true
     } else {
-        store.dispatch("tambahJadwal", model.value).then(() => {
-            store.dispatch("getJadwal");
-            router.push({
-                name: "Jadwal",
-            });
+        store.dispatch("tambahJadwal", model.value).then(res => {
+            if (res.request.status == 200) {
+                router.push({
+                    name: "Jadwal",
+                });
+                store.commit("notify", {
+                    type: "success",
+                    message: 'Tambah data jadwal berhasil!',
+                });
+            } else {
+                store.commit("notify", {
+                    type: "error",
+                    message: res.response.data.message,
+                });
+            }
         });
     }
 }
 
 function updateJadwal() {
-    store.dispatch("updateJadwal", model.value).then((data) => {
-        router.push({
-            name: "Jadwal",
-        });
+    store.dispatch("updateJadwal", model.value).then(res => {
+        if (res.request.status == 200) {
+            router.push({
+                name: "Jadwal",
+            });
+            store.commit("notify", {
+                type: "success",
+                message: 'Ubah data jadwal berhasil!',
+            });
+        } else {
+            confirmationUpdate.value = false
+            store.commit("notify", {
+                type: "error",
+                message: res.response.data.message,
+            });
+        }
     });
 }
 

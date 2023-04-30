@@ -2,7 +2,7 @@
     <DefaultPage>
         <LoadingView v-if="loading" />
         <div v-else>
-            <div class="-mx-4 md:mx-0 flex justify-end">
+            <div class="-mx-6 md:mx-0 flex justify-end">
                 <div>
                     <router-link
                         :to="{ name: 'TambahGuru' }"
@@ -372,7 +372,6 @@ function getForPage(ev, link) {
 }
 function cariGuru(){
     store.dispatch("searchFilterGuru", search.value);
-
 }
 store.dispatch("getGuru");
 const guruData = computed(() =>

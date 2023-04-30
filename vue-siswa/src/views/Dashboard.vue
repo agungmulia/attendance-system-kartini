@@ -1,75 +1,65 @@
 <template>
-    <DefaultPage pageHeading="Kelas Anda">
-        <LoadingView v-if="jadwalLoading" />
-        <div v-else>
-            <div v-if="Object.keys(jadwalData).length != 0">
-                <div class="pb-4">
-                    <h1 class="text-blue-900 text-xl font-semibold">
-                        Jadwal Anda
-                    </h1>
-                </div>
-
-                <div class="grid lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8">
-                    <div
-                        v-for="(item, ind) in jadwalData"
-                        :key="item.nama_kelas"
-                        class="shadow-md rounded-xl animate-fade-in-down"
-                        :style="{ animationDelay: `${ind * 0.1}s` }"
-                    >
-                        <div :class="cekJurusan(item.jurusan_kelas)">
-                            <div class="grid">
-                                <span class="text-xl font-semibold">
-                                    {{
-                                        item.tingkat_kelas +
-                                        " " +
-                                        item.jurusan_kelas +
-                                        " " +
-                                        item.nomor_kelas
-                                    }}
-                                </span>
-                                <span class="text-blue-900 font-medium">{{
-                                    item.mata_pelajaran_jadwal
-                                }}</span>
-                                <span>Wali Kelas: {{ item.nama_guru }}</span>
-                                <span class="text-green-600"
-                                    >{{ item.hari_jadwal }},
-                                    {{ item.sesi }}</span
-                                >
-                                <span class="text-gray-400 text-sm"
-                                    >{{ item.total_murid }} Murid</span
-                                >
-                            </div>
-                        </div>
-                        <div
-                            class="bg-gray-100 hover:bg-gray-200 duration-200 w-full px-4 py-2 rounded-b-xl"
-                        >
-                            <button
-                                class="text-lg flex items-center text-blue-900 hover:text-blue-800"
-                                @click="
-                                    cek_today(item.hari_jadwal, item.kode_kelas)
-                                "
-                            >
-                                <PencilIcon class="h-4 w-6" />
-                                Absen
-                            </button>
-                        </div>
-                    </div>
-                </div>
+    <DefaultPage>
+        <template v-slot:header>
+            <span class=" font-bold text-xl text-blue-900">Data Siswa</span>
+        </template>
+        <LoadingView v-if="loading || keteranganAbsensiLoading"/>
+        <div v-else class="space-y-4 lg:space-y-0 md:flex md:space-x-4">
+         <div
+            class="bg-white md:w-[50%] lg:w-[30%] px-4 py-4   rounded-lg shadow-md  text-blue-900 font-medium text-md lg:text-lg"
+        >
+            <div v-if="hariUpdate(model.updated_at)">Presensi Hari Ini: <span class=" text-gray-500">{{ model.status_presensi }}</span></div>
+            <span class="">Persentase Kehadiran</span>
+            <Doughnut
+                class="cursor-pointer"
+                :data="chartData"
+                :option="chartOption"
+            />
+            <div class="text-xs text-gray-400 text-center mt-2">
+                Note: Apabila kehadiran dibawah 75% maka siswa
+                tidak bisa mengikuti ujian
             </div>
-            <div v-else>
-                <div
-                    class="w-full flex justify-center py-8 bg-white shadow-sm border rounded-lg"
+            <div
+                v-if="
+                    (chartData.datasets[0].data[0] + (0.5 * chartData.datasets[0].data[1]) /
+                        totalValue()) *
+                    100 >
+                    75
+                "
+                class="py-4 grid justify-items-center"
+            >
+                <span
+                    class="bg bg-green-500 py-2 px-4 rounded-lg text-white text-lg"
+                    >Bisa Mengikuti Ujian</span
                 >
-                    <span class="text-gray-400">Jadwal Anda Kosong!</span>
-                </div>
             </div>
+            <div v-else class="py-4 grid justify-items-center">
+                <span
+                    class="bg bg-red-500 py-2 px-4 rounded-lg text-white text-md mg:text-lg"
+                    >Tidak Bisa Mengikuti Ujian</span
+                >
+            </div>
+            
         </div>
 
-        <AlertView
-            alert_message="Waktu absen anda tidak Sesuai"
-            :alertActive="today"
-            @close="toggleModal"
-        />
+        <div v-if="dataKeteranganAbsensi != null">
+            <div class=" bg-white px-10 py-4 w-fit rounded-lg shadow-md">
+                <span class=" font-medium text-blue-900">Keterangan Absensi</span>
+                <li v-for="(item, index) in dataKeteranganAbsensi" :key="item.id"><span class=" text-xs">{{ item.keterangan_presensi }} ({{
+                    new Date(
+                        item.updated_at
+                    ).toLocaleDateString(
+                        "id-ID",
+                        {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                        }
+                    )
+                }})</span></li>
+            </div>
+        </div>
+        </div>
     </DefaultPage>
 </template>
 
@@ -78,53 +68,62 @@ import { PencilIcon } from "@heroicons/vue/24/solid";
 import DefaultPage from "../components/DefaultPage.vue";
 import LoadingView from "../components/LoadingView.vue";
 import AlertView from "../components/AlertView.vue";
-import { computed, ref } from "vue";
+import { Doughnut } from "vue-chartjs";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { computed, ref,watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import store from "../store/index.js";
+ChartJS.register(ArcElement, Tooltip, Legend);
 
-const jadwalLoading = computed(() => store.state.jadwal.loading);
-const jadwalData = computed(() => store.state.jadwal.data);
-
+let chartOption = ref ({
+    responsive: true,
+        maintainAspectRatio: false,
+});
 const route = useRoute();
-
 const router = useRouter();
-
-const today = ref(false);
-
-function toggleModal() {
-    today.value = !today.value;
-}
-
-function cek_today(value, value2) {
-    if (hari() != value) {
-        router.push({
-            name: "Absensi",
-            params: { id: value2 },
-        });
-    } else {
-        return toggleModal();
+store.dispatch("getDataAbsen");
+store.dispatch("getKeteranganAbsensi");
+const dataKeteranganAbsensi = computed(() => store.state.keterangan_absensi.data);
+const absenData = computed(() =>store.state.absen.data);
+const loading = computed(() =>store.state.absen.loading);
+const keteranganAbsensiLoading = computed(() => store.state.keterangan_absensi.loading);
+let model = ref({
+    updated_at:null,
+    status_presensi:null,
+    total_hadir_presensi: null,
+    total_izin_presensi: null,
+    total_alpha_presensi: null,
+});
+watch(
+    () => store.state.absen.data[0],
+    (newVal) => {
+        model.value = {
+            ...JSON.parse(JSON.stringify(newVal)),
+        };
+        chartData.value.datasets[0].data[0] = model.value.total_hadir_presensi;
+        chartData.value.datasets[0].data[1] = model.value.total_izin_presensi;
+        chartData.value.datasets[0].data[2] = model.value.total_alpha_presensi;
     }
+);
+let chartData = ref({
+    labels: ["Hadir", "Izin", "Alpha"],
+    datasets: [
+        {
+            backgroundColor: ["#41B883", "#E46651", "#DD1B16"],
+            data: [0, 0, 0],
+        },
+    ],
+});
+function totalValue() {
+    return this.chartData.datasets[0].data.reduce(
+        (acc, value) => acc + value,
+        0
+    );
 }
-
-store.dispatch("getJadwal");
-
-function cekJurusan(value) {
-    if (value == "Desain Komunikasi Visual") {
-        return "w-full bg-cyan-400 rounded-t-xl px-4 py-2 bg-opacity-25";
-    } else if (value == "Akuntansi & Keuangan Lembaga") {
-        return "w-full bg-yellow-400 rounded-t-xl px-4 py-2 bg-opacity-25";
-    } else if (value == "Mesin") {
-        return "w-full bg-green-400 rounded-t-xl px-4 py-2 bg-opacity-25";
-    } else if (value == "Layanan Kesehatan") {
-        return "w-full bg-pink-400 rounded-t-xl px-4 py-2 bg-opacity-25";
-    } else {
-        return "w-full bg-red-400 rounded-t-xl px-4 py-2 bg-opacity-25";
-    }
-}
-
-function hari() {
-    var a = new Date();
-    return a.toLocaleDateString("id-ID", { weekday: "long" });
+function hariUpdate(value) {
+    let lastUpdate = new Date(value);
+    let hariIni = new Date();
+    return hariIni.toDateString() == lastUpdate.toDateString();
 }
 </script>
 <style></style>

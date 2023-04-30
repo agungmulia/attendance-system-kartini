@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\SiswaController;
 use App\Http\Controllers\Api\KelasController;
 use App\Http\Controllers\Api\SesiController;
 use App\Http\Controllers\Api\AbsensiController;
+use App\Http\Controllers\Api\PresensiController;
 use App\Http\Controllers\Api\JadwalController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -42,11 +43,13 @@ Route::group(['middleware' => ['auth:api','admin']], function (){
     Route::get('/searchFilterSiswa', [SiswaController::class,'searchFilterSiswa']);
 
     Route::put('/kosongkanKelas/{id}', [KelasController::class,'kosongkanKelas']);
+    Route::put('/hapusWaliKelas/{id}', [KelasController::class,'hapusWaliKelas']);
     Route::get('/kelas', [KelasController::class,'index']);
     Route::post('/kelas', [KelasController::class,'store']);
     Route::delete('/kelas/{id}', [KelasController::class,'destroy']);
     Route::put('/kelas/{id}', [KelasController::class,'update']);
     Route::get('/kelas/{id}', [KelasController::class,'show']);
+    Route::get('/searchFilterKelas', [KelasController::class,'searchFilterKelas']);
 
     Route::post('sesi', [SesiController::class,'store']);
     Route::get('sesi', [SesiController::class,'index']);
@@ -60,6 +63,9 @@ Route::group(['middleware' => ['auth:api','admin']], function (){
     Route::put('/jadwal/{id}', [JadwalController::class,'update']);
     Route::delete('/jadwal/{id}', [JadwalController::class,'destroy']);
     Route::get('dataJadwal', [JadwalController::class,'dataJadwal']);
+    Route::get('/searchFilterJadwal', [JadwalController::class,'searchFilterJadwal']);
+
+    Route::post('/detailPresensi', [PresensiController::class,'detailPresensi']);
 
     Route::get('totalData', [JadwalController::class,'totalData']);
 

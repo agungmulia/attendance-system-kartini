@@ -78,7 +78,7 @@
                             <span
                                 class="text-xs text-gray-500"
                                 v-if="hariUpdate(item.updated_at)"
-                                >Status Absen: {{ item.status_absensi }}</span
+                                >Status Absen: {{ item.status_presensi }}</span
                             >
                         </td>
 
@@ -105,7 +105,7 @@
                                 <span
                                     class="text-gray-500 lg:hidden font-medium text-xs"
                                     >Status Absen:
-                                    {{ item.status_absensi }}</span
+                                    {{ item.status_presensi }}</span
                                 >
                             </div>
 
@@ -127,10 +127,10 @@
                                 </div>
                             </div>
                             <input
-                                v-model="item.keterangan_absensi"
+                                v-model="item.keterangan_presensi"
                                 :disabled="item.absen != 'izin'"
                                 type="text"
-                                placeholder="keterangan absensi"
+                                placeholder="keterangan presensi"
                                 class="rounded-lg w-full text-sm border-gray-300 focus:border-red-700 focus:ring-red-700"
                             />
                         </td>
@@ -141,7 +141,7 @@
                 @click="absenFunction"
                 class="mt-4 bg-red-700 text-white rounded-lg px-4 py-1"
             >
-                Absen
+                Presensi
             </button>
 
             <AlertView
@@ -194,9 +194,9 @@ store.dispatch("showSiswaByKelas", route.params.id);
 let model = ref({
     nip_siswa: null,
     nama_siswa: null,
-    status_absensi: null,
+    status_presensi: null,
     absen: null,
-    keterangan_absensi: null,
+    keterangan_izin_absensi: null,
     updated_at: null,
 });
 
@@ -235,7 +235,7 @@ watch(
         store.state.siswa.data.map((v) => ({
             ...v,
             absen: null,
-            keterangan_absensi: "",
+            keterangan_presensi: null,
         })),
     (newVal) => {
         model.value = {
@@ -246,16 +246,14 @@ watch(
             Object.values(model.value).every((el) => el.absen == "hadir")
         );
 
-        tableData = {
-            tabledata: model.value,
-        };
+     
     }
 );
 
 function absenFunction() {
     if (absensiKosong()) {
         toggleModal();
-    } else store.dispatch("absen", { tableData: model.value }).then(
+    } else store.dispatch("presensi", { tableData: model.value }).then(
         store.dispatch("showSiswaByKelas", route.params.id)
     );
 }

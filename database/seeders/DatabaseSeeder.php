@@ -7,6 +7,7 @@ use App\Models\Siswa;
 use App\Models\User;
 use App\Models\Sesi;
 use App\Models\Absensi;
+use App\Models\Presensi;
 use App\Models\Jadwal;
 use Illuminate\Database\Seeder;
 use Carbon\Carbon;
@@ -132,7 +133,21 @@ class DatabaseSeeder extends Seeder
             [
                 'nis_siswa' => '2424242',
             ],
-            
+        ];
+
+        $presensi =[
+            [
+                'nis_siswa' => '1234123',
+            ],
+            [
+                'nis_siswa' => '3213211',
+            ],
+            [
+                'nis_siswa' => '24101010',
+            ],
+            [
+                'nis_siswa' => '2424242',
+            ],
         ];
 
         $sesi = [
@@ -223,6 +238,9 @@ class DatabaseSeeder extends Seeder
         }
         foreach ($absensi as $key => $value) {
             Absensi::create($value);
+        }
+        foreach ($presensi as $key => $value) {
+            Presensi::create($value);
         }
         foreach ($user as $key => $value) {
             User::create($value);

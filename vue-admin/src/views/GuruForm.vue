@@ -383,24 +383,47 @@ function onImageChoose(ev) {
     reader.readAsDataURL(file);
 }
 
+
 function tambahGuruConfirmation(){
     if(route.params.id){
         confirmationUpdate.value = true
     }else{
-        store.dispatch("tambahGuru", model.value).then(() => {
-            store.dispatch("getGuru");
-            router.push({
-                name: "Guru",
-            });
-        });
+        store.dispatch("tambahGuru", model.value).then(res => {
+            if(res.request.status == 200){
+                router.push({
+                    name: "Guru",
+                });
+                store.commit("notify", {
+                    type: "success",
+                    message: 'Tambah data guru berhasil!',
+                });
+            }else{
+                store.commit("notify", {
+                    type: "error",
+                    message: res.response.data.message,
+                });
+            }    
+        })
     }
 }
 
 function updateGuru(){
-    store.dispatch("updateGuru", model.value).then((data) => {
-        router.push({
-            name: "Guru",
-        });
+    store.dispatch("updateGuru", model.value).then(res => {
+         if (res.request.status == 200) {
+            router.push({
+                name: "Guru",
+            });
+            store.commit("notify", {
+                type: "success",
+                message: 'Ubah data guru berhasil!',
+            });
+        } else {
+            confirmationUpdate.value = false
+            store.commit("notify", {
+                type: "error",
+                message: res.response.data.message,
+            });
+        }
     });
 }
 watch(

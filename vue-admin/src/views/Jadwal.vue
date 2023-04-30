@@ -18,12 +18,15 @@
                     <div
                         class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8"
                     >
-                        <input
-                            type="text"
-                            v-model="search"
-                            placeholder="Cari Mata Pelajaran"
-                            class="mt-1 focus:ring-red-500 focus:border-red-500 block w-full mb-2 shadow-sm sm:text-sm border-gray-300 rounded-md"
-                        />
+                        <div class=" flex items-center mt-4 mb-2 space-x-2">
+                                <input
+                                    type="text"
+                                    v-model="search"
+                                    placeholder="Cari Mata Pelajaran atau Hari"
+                                    class="focus:ring-red-500 focus:border-red-500 block w-full shadow-sm  border-gray-300 rounded-md"
+                                />
+                                <button @click.prevent="cariJadwal" type="button" class=" px-5 py-2 h-fit  bg-red-600 hover:bg-red-900 duration-200 rounded-lg text-white">Cari</button>
+                            </div>
                         <div
                             class="overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5 rounded-lg"
                         >
@@ -84,7 +87,7 @@
                                     class="divide-y divide-gray-200 bg-white"
                                 >
                                     <tr
-                                        v-for="(person, itemIdx) in jadwalData"
+                                        v-for="(person, itemIdx) in jadwalData.data"
                                         :key="person.kode_jadwal"
                                         class="animate-fade-in-down"
                                         :style="{
@@ -147,7 +150,7 @@
                                                 <div>
                                                     <span>Sesi: </span>
                                                     <span class="text-blue-900"
-                                                        >{{ person.sesi }} ({{
+                                                        >{{ person.nama_sesi }} ({{
                                                             person.jam_mulai_sesi
                                                         }}-{{
                                                             person.jam_selesai_sesi
@@ -204,7 +207,7 @@
                                         <td
                                             class="px-3 text-sm py-4 hidden lg:table-cell"
                                         >
-                                            {{ person.sesi }} ({{
+                                            {{ person.nama_sesi }} ({{
                                                 person.jam_mulai_sesi
                                             }}-{{ person.jam_selesai_sesi }})
                                         </td>
@@ -236,6 +239,32 @@
                                 </tbody>
                             </table>
                         </div>
+                        <div class="flex justify-center mt-5">
+                                    <nav
+                                    class="relative z-0 inline-flex justify-center rounded-md shadow-sm -space-x-px"
+                                    aria-label="Pagination"
+                                    >
+                                    <!-- Current: "z-10 bg-indigo-50 border-indigo-500 text-indigo-600", Default: "bg-white border-gray-300 text-gray-500 hover:bg-gray-50" -->
+                                    <a
+                                        v-for="(link, i) of jadwalData.links"
+                                        :key="i"
+                                        :disabled="!link.url"
+                                        href="#"
+                                        @click="getForPage($event, link)"
+                                        aria-current="page"
+                                        class="relative inline-flex items-center px-4 py-2 border text-sm font-medium whitespace-nowrap"
+                                        :class="[
+                                            link.active
+                                                ? 'z-10 bg-indigo-50 border-red-500 text-red-600'
+                                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
+                                            i === 0 ? 'rounded-l-md bg-gray-100 text-gray-700' : '',
+                                            i === jadwalData.links.length - 1 ? 'rounded-r-md' : '',
+                                        ]"
+                                        v-html="link.label"
+                                    >
+                                    </a>
+                                    </nav>
+                                </div>
                     </div>
                 </div>
             </div>
@@ -285,6 +314,13 @@ const alertMessage = ref("");
 const updateConfirm = ref(false);
 const confirmation = ref(false);
 let kode_jadwal = ref('');
+let search = ref("");
+
+const loading = computed(() => store.state.jadwal.loading);
+const jadwalData = computed(() =>
+    store.state.jadwal
+);
+
 function deleteModal(value) {
     confirmation.value = true
     kode_jadwal.value = value
@@ -301,16 +337,17 @@ function deleteKelas(value) {
 function toggleConfirmation() {
     confirmation.value = !confirmation.value;
 }
-let search = ref("");
+function getForPage(ev, link) {
+    ev.preventDefault();
+    if (!link.url || link.active) {
+        return;
+    }
+    store.dispatch("getJadwal", { url: link.url });
+}
+function cariJadwal() {
+    store.dispatch("searchFilterJadwal", search.value);
 
-const loading = computed(() => store.state.jadwal.loading);
-const jadwalData = computed(() =>
-    store.state.jadwal.data.filter((i) =>
-        i.mata_pelajaran_jadwal
-            .toLowerCase()
-            .includes(search.value.toLowerCase())
-    )
-);
+}
 
 store.dispatch("getJadwal");
 </script>

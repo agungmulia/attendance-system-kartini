@@ -60,17 +60,17 @@
                             <td
                                 class="whitespace-nowrap px-3 py-4 text-xs text-gray-500"
                             >
-                                {{ item.hadir_absensi }}
+                                {{ item.total_hadir_presensi }}
                             </td>
                             <td
                                 class="whitespace-nowrap px-3 py-4 text-xs text-gray-500"
                             >
-                                {{ item.izin_absensi }}
+                                {{ item.total_izin_presensi }}
                             </td>
                             <td
                                 class="whitespace-nowrap px-3 py-4 text-xs text-gray-500"
                             >
-                                {{ item.alpha_absensi }}
+                                {{ item.total_alpha_presensi }}
                             </td>
                             <td
                                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-xs font-medium sm:pr-6"
@@ -103,7 +103,7 @@
                 class="w-full bg-white shadow-sm flex justify-center py-8 rounded-lg text-gray-400"
                 v-else
             >
-                Data kelas dimana anda seorang wali kelas tidak ditemukan!
+                Data kelas tidak ditemukan, Hubungi Admin apabila ada kesalahan!
             </div>
         </div>
     </DefaultPage>

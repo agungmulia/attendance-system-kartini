@@ -7,11 +7,12 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Models\Siswa;
 use App\Models\User;
-use App\Models\Absensi;
+use App\Models\Presensi;
 use Validator;
 use App\Models\Keterangan_Absensi;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\siswaResource;
@@ -47,12 +48,14 @@ class SiswaController extends Controller
         $Siswa = Siswa::select('siswas.*')
             ->where('siswas.nis_siswa',$nis_siswa )
             ->first();
-        if ($Siswa->foto_siswa!=null) {
-                $absolutePath = public_path($Guru->foto_siswa);
-                File::delete($absolutePath);
-        }
+        
          // Check if image was given and save on local file system
         if (isset($updateData['foto_siswa'])) {
+            if ($Siswa->foto_siswa!=null) {
+                    $absolutePath = public_path($Siswa->foto_siswa);
+                    File::delete($absolutePath);
+            }
+
             $relativePath  = $this->saveImage($updateData['foto_siswa']);
             $Siswa->foto_siswa = $relativePath; 
         }
@@ -64,29 +67,147 @@ class SiswaController extends Controller
         $Siswa->kode_kelas = $updateData['kode_kelas'];
         $Siswa->jenis_kelamin_siswa = $updateData['jenis_kelamin_siswa'];
         $Siswa->email_siswa = $updateData['email_siswa'];
+        $Siswa->no_telp_orang_tua = $updateData['no_telp_orang_tua'];
         $Siswa->no_telp_siswa = $updateData['no_telp_siswa'];
         $Siswa->password_siswa =bcrypt($updateData['nis_siswa']);
         $Siswa->save();
 
-        $Absensi = Absensi::select('absensis.*')
-            ->where('absensis.nis_siswa',$nis_siswa )
+        $Presensi = Presensi::select('presensis.*')
+            ->where('presensis.nis_siswa',$nis_siswa )
             ->first();
-        $Absensi->hadir_absensi = $updateData['hadir_absensi'];
-        $Absensi->izin_absensi = $updateData['izin_absensi'];
-        $Absensi->alpha_absensi =$updateData['alpha_absensi'];
-        $Absensi->save();
+        $Presensi->total_hadir_presensi = $updateData['total_hadir_presensi'];
+        $Presensi->total_izin_presensi = $updateData['total_izin_presensi'];
+        $Presensi->total_alpha_presensi =$updateData['total_alpha_presensi'];
+        $Presensi->save();
         return response([
-            'message' => 'Tambah siswa berhasil!',
+            'message' => 'Ubah data siswa berhasil!',
             'data' =>$Siswa
         ],200);      
     }
 
     public function searchFilterSiswa(Request $request){
         $query = $request->get('query');
-        $data = Siswa::where('nama_siswa', 'like', '%'.$query.'%')
+        $Siswa = siswaResource::collection(Siswa::leftJoin('kelas', 'siswas.kode_kelas','=','kelas.kode_kelas')
+            ->select('siswas.*','kelas.tingkat_kelas','kelas.jurusan_kelas','kelas.nomor_kelas')
+            ->orderBy('siswas.nama_siswa')
+            ->where('nama_siswa', 'like', '%'.$query.'%')
             ->orWhere('email_siswa', 'like', '%'.$query.'%')
-            ->paginate(10);
-        return response()->json($data);
+            ->paginate(10));
+
+        if(count($Siswa)>0){
+            return $Siswa;
+        }
+    }
+
+    public function dataAbsen(){
+        $user_email = Auth::user()->email;
+        $Siswa = Siswa::join('presensis','siswas.nis_siswa','presensis.nis_siswa')
+            ->where('siswas.email_siswa',$user_email )
+            ->select('presensis.updated_at','presensis.status_presensi','presensis.total_hadir_presensi','presensis.total_izin_presensi','presensis.total_alpha_presensi')
+            ->get();
+        if(!is_null($Siswa)){
+            return response([
+                'message' => 'Mengambil Data Siswa Berhasil',
+                'data' =>$Siswa
+            ],200);
+        }
+        return response([
+            'message' => 'Siswa Tidak Ditemukan',
+            'data' => null
+        ],404);
+    }
+
+    public function dataIzin(){
+        $user_email = Auth::user()->email;
+        $Keterangan_absensi = Siswa::join('presensis','siswas.nis_siswa','presensis.nis_siswa')
+            ->leftJoin('detail_presensis','presensis.id','detail_presensis.id_presensi')
+            ->select('detail_presensis.updated_at','detail_presensis.keterangan_presensi')
+            ->where('siswas.email_siswa',$user_email )
+            ->whereNotNull('detail_presensis.keterangan_presensi')
+            ->get();
+        if(count($Keterangan_absensi)>0){
+            return response([
+                'message' => 'Mengambil Data Siswa Berhasil',
+                'data' =>$Keterangan_absensi
+            ],200);
+        }
+        return response([
+            'message' => 'Kelas Tidak Ditemukan',
+            'data' => null
+        ],404);
+    }
+
+    public function profilSiswa()
+    {
+        $user_email = Auth::user()->email;
+        $Siswa = Siswa::leftJoin('kelas', 'siswas.kode_kelas', '=', 'kelas.kode_kelas')
+            -> select('siswas.*','kelas.tingkat_kelas','kelas.jurusan_kelas','kelas.nomor_kelas')
+            ->where('siswas.email_siswa',$user_email )
+            ->first();
+            
+        
+        if(!is_null($Siswa)){
+            return response([
+                'message' => 'Mengambil Data Siswa Berhasil',
+                'data' =>new siswaResource($Siswa)
+            ],200);
+        }
+        return response([
+            'message' => 'Siswa Tidak Ditemukan',
+            'data' => null
+        ],404);
+    }
+
+    public function updateProfileSiswa(Request $request)
+    {
+        $user_email = Auth::user()->email;
+        $foto_siswa = Siswa::where('siswas.email_siswa',$user_email )->value('foto_siswa');
+        $Siswa = Siswa::select('siswas.*')
+            ->where('siswas.email_siswa',$user_email )
+            ->first();
+        if(is_null($Siswa)){
+            return response([
+                'message' => 'Siswa Not Found',
+                'data' => null
+            ],404);
+        }
+
+        $updateData = $request->all();
+
+        
+        $validate = Validator::make($updateData,[
+            'no_telp_siswa'=>'numeric'
+        ]);
+
+        if($validate->fails())
+            return response(['message' => $validate->errors()],400);
+
+        
+         // Check if image was given and save on local file system
+        if (isset($updateData['foto_siswa'])) {
+            if ($foto_siswa!=null) {
+                $absolutePath = public_path($Siswa->foto_siswa);
+                File::delete($absolutePath);
+            }
+
+            $relativePath  = $this->saveImage($updateData['foto_siswa']);
+            $Siswa->foto_siswa = $relativePath; 
+        }
+
+        $Siswa->alamat_siswa = $updateData['alamat_siswa'];
+        $Siswa->no_telp_siswa = $updateData['no_telp_siswa'];
+        
+        if($Siswa->save()){
+            return response([
+                'message' => 'Update Profil Berhasil!',
+                'data' => $Siswa
+            ],200);
+        }
+
+        return response([
+            'message' => 'Update Profil Gagal!',
+            'data' => null,
+        ],400);
     }
 
 
@@ -110,8 +231,8 @@ class SiswaController extends Controller
         
         $Siswa = new Siswa();
         // Check if image was given and save on local file system
-        if (isset($storeData['foto_guru'])) {
-            $relativePath  = $this->saveImage($storeData['foto_guru']);
+        if (isset($storeData['foto_siswa'])) {
+            $relativePath  = $this->saveImage($storeData['foto_siswa']);
             $Siswa->foto_siswa = $relativePath; 
         }
         $Siswa->nis_siswa = $storeData['nis_siswa'];
@@ -122,6 +243,7 @@ class SiswaController extends Controller
         $Siswa->kode_kelas = $storeData['kode_kelas'];
         $Siswa->jenis_kelamin_siswa = $storeData['jenis_kelamin_siswa'];
         $Siswa->email_siswa = $storeData['email_siswa'];
+        $Siswa->no_telp_orang_tua = $storeData['no_telp_orang_tua'];
         $Siswa->no_telp_siswa = $storeData['no_telp_siswa'];
         $Siswa->password_siswa =bcrypt($storeData['nis_siswa']);
         $Siswa->save();
@@ -133,7 +255,7 @@ class SiswaController extends Controller
         $User = User::create($dataUser);
 
         $dataAbsensi['nis_siswa'] = $storeData['nis_siswa'];
-        $Absensi = Absensi::create($dataAbsensi);
+        $Presensi = Presensi::create($dataAbsensi);
         return response([
             'message' => 'Tambah siswa berhasil!',
             'data' =>$Siswa
@@ -165,22 +287,22 @@ class SiswaController extends Controller
 
         if($Siswa->delete()){
             return response([
-                'message' => 'Delete Siswa Success',
+                'message' => 'Hapus data siswa berhasil!',
                 'data' =>$Siswa
             ],200);
         }
        
         return response([
-            'message' => 'Delete Siswa Failed',
+            'message' => 'Hapus data siswa gagal!',
             'data' => null,
         ],400);  
     }
 
      public function showSiswaByKelas($kode_kelas)
     {
-       $Siswa = Siswa::join('absensis', 'siswas.nis_siswa', '=', 'absensis.nis_siswa')
+       $Siswa = Siswa::join('presensis', 'siswas.nis_siswa', '=', 'presensis.nis_siswa')
             ->where('siswas.kode_kelas',$kode_kelas )
-            ->select('siswas.nis_siswa','siswas.nama_siswa','absensis.updated_at','absensis.status_absensi')
+            ->select('siswas.nis_siswa','siswas.nama_siswa','presensis.updated_at','presensis.status_presensi')
             ->get();
 
         if(count($Siswa)>0){
@@ -250,8 +372,8 @@ class SiswaController extends Controller
 
     public function show($nis_siswa){
         $Siswa = Siswa::leftJoin('kelas', 'siswas.kode_kelas', '=', 'kelas.kode_kelas')
-                    ->leftJoin('absensis', 'siswas.nis_siswa', '=', 'absensis.nis_siswa')
-                    ->select('siswas.*','kelas.tingkat_kelas','kelas.jurusan_kelas','kelas.nomor_kelas','absensis.hadir_absensi','absensis.izin_absensi','absensis.alpha_absensi')
+                    ->leftJoin('presensis', 'siswas.nis_siswa', '=', 'presensis.nis_siswa')
+                    ->select('siswas.*','kelas.tingkat_kelas','kelas.jurusan_kelas','kelas.nomor_kelas','presensis.total_hadir_presensi','presensis.total_izin_presensi','presensis.total_alpha_presensi')
                     ->where('siswas.nis_siswa',$nis_siswa )
                     ->first();
         if(!is_null($Siswa)){

@@ -22,8 +22,9 @@ class CreateSiswasTable extends Migration
             $table->string('tempat_lahir_siswa',100);
             $table->date('tanggal_lahir_siswa');
             $table->string('email_siswa',100);
-            $table->string('kode_kelas',50)->nullable();;
+            $table->string('kode_kelas',50)->nullable();
             $table->foreign('kode_kelas')->references('kode_kelas')->on('kelas')->onUpdate('cascade');
+            $table->string('no_telp_orang_tua',15)->nullable();
             $table->string('no_telp_siswa',15);
             $table->string('password_siswa',100);
             $table->timestamps();

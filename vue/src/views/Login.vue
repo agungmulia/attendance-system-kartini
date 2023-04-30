@@ -110,7 +110,7 @@
                                         <div
                                             class="flex items-center justify-between"
                                         >
-                                            <div class="space-x-1">
+                                            <div class="space-x-1 hidden">
                                                 <input
                                                     v-model="user.remember"
                                                     id="remember"

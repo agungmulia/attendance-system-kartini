@@ -110,7 +110,7 @@
                                         <div
                                             class="flex items-center justify-between"
                                         >
-                                            <div class="space-x-1">
+                                            <!-- <div class="space-x-1">
                                                 <input
                                                     v-model="user.remember"
                                                     id="remember"
@@ -123,7 +123,7 @@
                                                     class="h-4 w-4 text-xs"
                                                     >Remember me</span
                                                 >
-                                            </div>
+                                            </div> -->
                                             <div class="flex items-center">
                                                 <button
                                                     type="button"

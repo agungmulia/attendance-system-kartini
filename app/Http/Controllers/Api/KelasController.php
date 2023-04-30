@@ -22,8 +22,7 @@ class KelasController extends Controller
         
         if($validate->fails())
             return response(['message' => $validate->errors()],400);
-        
-        
+         
         $Kelas = Kelas::select('kelas.*')
             ->where('kelas.kode_kelas',$kode_kelas )
             ->first();
@@ -47,7 +46,7 @@ class KelasController extends Controller
         }
         if($Kelas->save()){
             return response([
-                'message' => 'Tambah kelas berhasil!',
+                'message' => 'Ubah data kelas berhasil!',
                 'data' =>$Kelas
             ],200);      
         }
@@ -64,7 +63,6 @@ class KelasController extends Controller
         
         if($validate->fails())
             return response(['message' => $validate->errors()],400);
-        
         
         $Kelas = new Kelas();
         $Kelas->tingkat_kelas = $storeData['tingkat_kelas'];
@@ -108,16 +106,15 @@ class KelasController extends Controller
             ],404);
         }
 
-
         if($Kelas->delete()){
             return response([
-                'message' => 'Delete Kelas Success',
+                'message' => 'Hapus data kelas berhasil!',
                 'data' =>$Kelas
             ],200);
         }
        
         return response([
-            'message' => 'Delete Kelas Failed',
+            'message' => 'Hapus data kelas gagal!',
             'data' => null,
         ],400);  
     }
@@ -127,20 +124,34 @@ class KelasController extends Controller
     {
         $Kelas = Kelas::leftJoin('gurus', 'kelas.nip_guru', '=', 'gurus.nip_guru')
             ->leftJoin('siswas', 'kelas.kode_kelas', '=', 'siswas.kode_kelas')
-            ->select('gurus.nama_guru','kelas.kode_kelas','kelas.tingkat_kelas','kelas.jurusan_kelas','kelas.nomor_kelas',DB::raw("count(siswas.nis_siswa) as total_murid"))
-            ->groupBy('gurus.nama_guru','kelas.kode_kelas','kelas.tingkat_kelas','kelas.jurusan_kelas','kelas.nomor_kelas')
-            ->get();
+            ->select('gurus.nama_guru','gurus.nip_guru','kelas.kode_kelas','kelas.tingkat_kelas','kelas.jurusan_kelas','kelas.nomor_kelas',DB::raw("count(siswas.nis_siswa) as total_murid"))
+            ->groupBy('gurus.nama_guru','gurus.nip_guru','kelas.kode_kelas','kelas.tingkat_kelas','kelas.jurusan_kelas','kelas.nomor_kelas')
+            ->paginate(10);
 
         if(count($Kelas)>0){
-            return response([
-                'message' => 'Retrieve All Success',
-                'data' =>$Kelas
-            ],200);
+            return $Kelas;
         }
         return response([
             'message' => 'Empty',
             'data' => null
         ],400);
+    }
+
+    public function searchFilterKelas(Request $request){
+        $query = $request->get('query');
+
+        $Kelas = Kelas::leftJoin('gurus', 'kelas.nip_guru', '=', 'gurus.nip_guru')
+            ->leftJoin('siswas', 'kelas.kode_kelas', '=', 'siswas.kode_kelas')
+            ->select('gurus.nama_guru','kelas.kode_kelas','kelas.tingkat_kelas','kelas.jurusan_kelas','kelas.nomor_kelas',DB::raw("count(siswas.nis_siswa) as total_murid"))
+            ->groupBy('gurus.nama_guru','kelas.kode_kelas','kelas.tingkat_kelas','kelas.jurusan_kelas','kelas.nomor_kelas')
+            ->where('tingkat_kelas', 'like', '%'.$query.'%')
+            ->orWhere('jurusan_kelas', 'like', '%'.$query.'%')
+            ->orWhere('nomor_kelas', 'like', '%'.$query.'%')
+            ->paginate(10);
+
+        if(count($Kelas)>0){
+            return $Kelas;
+        }
     }
 
     public function show($kode_kelas){
@@ -166,6 +177,15 @@ class KelasController extends Controller
         
         return response([
             'message' => 'Kelas Berhasil Dikosongkan!',
+        ],404);
+    }
+
+    public function hapusWaliKelas($nip_guru){
+        Kelas::where('kelas.nip_guru', $nip_guru)->update(['kelas.nip_guru' => null]);
+
+        
+        return response([
+            'message' => 'Wali kelas berhasil Dihapus!',
         ],404);
     }
 }

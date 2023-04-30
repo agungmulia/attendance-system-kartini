@@ -24,9 +24,9 @@
         <tr>
             <td>{{ $val->nis_siswa }}</td>
             <td>{{ $val->nama_siswa }}</td>
-            <td>{{ $val->hadir_absensi }}</td>
-            <td>{{ $val->izin_absensi }}</td>
-            <td>{{ $val->alpha_absensi }}</td>
+            <td>{{ $val->total_hadir_presensi }}</td>
+            <td>{{ $val->total_izin_presensi }}</td>
+            <td>{{ $val->total_alpha_presensi }}</td>
             <td>
                 @if ($val->persentase <= 75) Tidak Dapat Mengikuti Ujian @else Dapat Mengikuti Ujian @endif </td>
         </tr>

@@ -18,12 +18,15 @@
                     <div
                         class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8"
                     >
-                        <input
-                            type="text"
-                            v-model="search"
-                            placeholder="Cari Kelas"
-                            class="mt-1 focus:ring-red-500 focus:border-red-500 block w-full mb-2 shadow-sm sm:text-sm border-gray-300 rounded-md"
-                        />
+                        <div class=" flex items-center mt-4 mb-2 space-x-2">
+                                    <input
+                                        type="text"
+                                        v-model="search"
+                                        placeholder="Cari Tingkat, Jurusan, atau Nomor Kelas"
+                                        class="focus:ring-red-500 focus:border-red-500 block w-full shadow-sm  border-gray-300 rounded-md"
+                                    />
+                                    <button @click.prevent="cariKelas" type="button" class=" px-5 py-2 h-fit  bg-red-600 hover:bg-red-900 duration-200 rounded-lg text-white">Cari</button>
+                                </div>
                         <div
                             class="overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5 rounded-lg"
                         >
@@ -67,7 +70,7 @@
                                     class="divide-y divide-gray-200 bg-white"
                                 >
                                     <tr
-                                        v-for="(person, itemIdx) in kelasData"
+                                        v-for="(person, itemIdx) in kelasData.data"
                                         :key="person.kode_kelas"
                                         class="animate-fade-in-down"
                                         :style="{
@@ -147,6 +150,13 @@
                                                 >
                                                     Kosongkan Kelas
                                                 </button>
+                                                <button
+                                                        @click.prevent="hapusWaliKelas(person.nip_guru)"
+                                                        type="button"
+                                                        class="bg-red-600 text-white px-4 py-2 rounded-lg shadow-sm text-xs duration-200 hover:bg-red-900"
+                                                    >
+                                                        Hapus Wali Kelas
+                                                    </button>
                                                 <router-link
                                                     :to="{
                                                         name: 'EditKelas',
@@ -171,6 +181,32 @@
                                 </tbody>
                             </table>
                         </div>
+                        <div class="flex justify-center mt-5">
+                                <nav
+                                class="relative z-0 inline-flex justify-center rounded-md shadow-sm -space-x-px"
+                                aria-label="Pagination"
+                                >
+                                <!-- Current: "z-10 bg-indigo-50 border-indigo-500 text-indigo-600", Default: "bg-white border-gray-300 text-gray-500 hover:bg-gray-50" -->
+                                <a
+                                    v-for="(link, i) of kelasData.links"
+                                    :key="i"
+                                    :disabled="!link.url"
+                                    href="#"
+                                    @click="getForPage($event, link)"
+                                    aria-current="page"
+                                    class="relative inline-flex items-center px-4 py-2 border text-sm font-medium whitespace-nowrap"
+                                    :class="[
+                                        link.active
+                                            ? 'z-10 bg-indigo-50 border-red-500 text-red-600'
+                                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
+                                        i === 0 ? 'rounded-l-md bg-gray-100 text-gray-700' : '',
+                                        i === kelasData.links.length - 1 ? 'rounded-r-md' : '',
+                                    ]"
+                                    v-html="link.label"
+                                >
+                                </a>
+                                </nav>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -227,6 +263,12 @@ function kosongkanKelas(value) {
         store.dispatch("getKelas"));
   
 }
+
+function hapusWaliKelas(value) {
+    store.dispatch("hapusWaliKelas", value).then(
+        store.dispatch("getKelas"));
+
+}
 function deleteKelas(value) {
     store.dispatch("deleteKelas", value).then(
         store.dispatch("getKelas"));
@@ -239,13 +281,21 @@ function deleteKelas(value) {
 function toggleConfirmation() {
     confirmation.value = !confirmation.value;
 }
+function getForPage(ev, link) {
+    ev.preventDefault();
+    if (!link.url || link.active) {
+        return;
+    }
+    store.dispatch("getKelas", { url: link.url });
+}
+function cariKelas() {
+    store.dispatch("searchFilterKelas", search.value);
+}
 let search = ref("");
 
 const loading = computed(() => store.state.kelas.loading);
 const kelasData = computed(() =>
-    store.state.kelas.data.filter((i) =>
-        i.jurusan_kelas.toLowerCase().includes(search.value.toLowerCase())
-    )
+    store.state.kelas
 );
 
 store.dispatch("getKelas");

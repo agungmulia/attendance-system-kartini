@@ -20,16 +20,15 @@ class SesiController extends Controller
             ],404);
         }
 
-
         if($Sesi->delete()){
             return response([
-                'message' => 'Delete Sesi Success',
+                'message' => 'Hapus data sesi berhasil!',
                 'data' =>$Sesi
             ],200);
         }
        
         return response([
-            'message' => 'Delete Sesi Failed',
+            'message' => 'Hapus data sesi gagal!',
             'data' => null,
         ],400);  
     }
@@ -46,14 +45,13 @@ class SesiController extends Controller
         if($validate->fails())
             return response(['message' => $validate->errors()],400);
         
-        
         $Sesi = Sesi::select('sesis.*')->where('sesis.id',$id)->first();
         $Sesi->nama_sesi = $updateData['nama_sesi'];
         $Sesi->jam_mulai_sesi = $updateData['jam_mulai_sesi'];
         $Sesi->jam_selesai_sesi = $updateData['jam_selesai_sesi'];
         if($Sesi->save()){
             return response([
-                'message' => 'Tambah sesi berhasil!',
+                'message' => 'Ubah data sesi berhasil!',
                 'data' =>$Sesi
             ],200);      
         }
@@ -68,10 +66,8 @@ class SesiController extends Controller
             'jam_mulai_sesi' => 'required',
             'jam_selesai_sesi' => 'required',
         ]);
-        
         if($validate->fails())
             return response(['message' => $validate->errors()],400);
-        
         
         $Sesi = new Sesi();
         $Sesi->nama_sesi = $storeData['nama_sesi'];
@@ -91,7 +87,7 @@ class SesiController extends Controller
 
         if(count($Sesi)>0){
             return response([
-                'message' => 'Retrieve All Success',
+                'message' => 'Mengambil data sesi berhasil!',
                 'data' =>$Sesi
             ],200);
         }

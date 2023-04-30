@@ -20,6 +20,6 @@ class SiswaMiddleware
             return $next($request);
         }
 
-        return response()->json(['message' => 'Anda tidak mendapat otorisasi untuk mengakses sistem ini'], 403);
+        return response()->json(['message' => 'Anda tidak mendapat otorisasi untuk mengakses sistem ini siswa'], 403);
     }
 }

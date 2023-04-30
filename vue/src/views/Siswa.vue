@@ -40,7 +40,7 @@
                         >
                             <div class="grid justify-items-center">
                                 <img
-                                    class="w-40 h-40 rounded-full"
+                                    class="w-40 h-40 mb-4 rounded-full"
                                     v-if="model.foto_siswa_url"
                                     :src="model.foto_siswa_url"
                                 />
@@ -159,8 +159,8 @@
 
                     <div v-if="dataKeteranganAbsensi != null">
                         <div class=" bg-white px-10 py-4 w-fit rounded-lg">
-                            <span class=" font-medium text-blue-900">Keterangan Absensi</span>
-                            <li v-for="(item, index) in dataKeteranganAbsensi" :key="item.id"><span class=" text-xs">{{ item.keterangan_absensi }} ({{
+                            <span class=" font-medium text-blue-900">Keterangan Presensi</span>
+                            <li v-for="(item, index) in dataKeteranganAbsensi" :key="item.id"><span class=" text-xs">{{ item.keterangan_presensi }} ({{
                                 new Date(
                                     item.updated_at
                                 ).toLocaleDateString(
@@ -221,9 +221,9 @@ watch(
         model.value = {
             ...JSON.parse(JSON.stringify(newVal)),
         };
-        chartData.value.datasets[0].data[0] = model.value.hadir_absensi;
-        chartData.value.datasets[0].data[1] = model.value.izin_absensi;
-        chartData.value.datasets[0].data[2] = model.value.alpha_absensi;
+        chartData.value.datasets[0].data[0] = model.value.total_hadir_presensi;
+        chartData.value.datasets[0].data[1] = model.value.total_izin_presensi;
+        chartData.value.datasets[0].data[2] = model.value.total_alpha_presensi;
     }
 );
 let model = ref({
@@ -234,9 +234,9 @@ let model = ref({
     no_telp_siswa: null,
     alamat_siswa: null,
     jenis_kelamin_guru: null,
-    hadir_absensi: null,
-    izin_absensi: null,
-    alpha_absensi: null,
+    total_hadir_presensi: null,
+    total_izin_presensi: null,
+    total_alpha_presensi: null,
 });
 
 let chartData = ref({
@@ -257,6 +257,6 @@ function totalValue() {
 }
 
 store.dispatch("showSiswa", route.params.id);
-store.dispatch("keteranganAbsensiById", route.params.id);
+store.dispatch("keteranganPresensiById", route.params.id);
 </script>
 <style></style>

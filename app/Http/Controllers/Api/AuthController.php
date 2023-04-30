@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Guru;
+use App\Models\Siswa;
 use Validator;
 
 class AuthController extends Controller
@@ -93,16 +94,13 @@ class AuthController extends Controller
     public function loginAdmin(Request $request){
         $loginData = $request->all();
         $validate = Validator::make($loginData,[
-            'email' => 'required',
+            'email' => 'required|email:rfc,dns',
             'password' => 'required',
             'remember' => 'boolean'
         ]);
 
-        if($validate->fails()){
-            foreach ($validate->errors()->all() as $message) {
-                return response(['error' => $message],400);
-            }
-        }
+        if($validate->fails())
+            return response(['message' => $validate->errors()],400);
             
 
         $remember = $loginData['remember'] ?? false;
@@ -158,6 +156,38 @@ class AuthController extends Controller
         $user->password = Hash::make($request->password_baru);
         $Guru->password_guru = Hash::make($request->password_baru);
         if($Guru->save() && $user->save()){
+            return response([
+                'message' => 'Password Berhasil Dirubah!',
+            ],200);
+        }
+    }
+
+    public function changePasswordSiswa(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'password_lama' => ['required', 'string'],
+            'password_baru' => ['required', 'string', 'min:8', 'confirmed'],
+            
+        ]);
+
+        if($validator->fails()){
+            foreach ($validator->errors()->all() as $message) {
+                return response(['error' => $message],400);
+            }
+        }
+
+        $user = Auth::user();
+        if (!Hash::check($request->password_lama, $user->password)) {
+           return response(['error' => 'Password Lama Anda Salah!'],400);
+        }
+        $user_email = Auth::user()->email;
+        $Siswa = Siswa::select('siswas.*')
+            ->where('siswas.email_siswa',$user_email )
+            ->first();
+
+        $user->password = Hash::make($request->password_baru);
+        $Siswa->password_siswa = Hash::make($request->password_baru);
+        if($Siswa->save() && $user->save()){
             return response([
                 'message' => 'Password Berhasil Dirubah!',
             ],200);

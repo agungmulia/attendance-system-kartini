@@ -6,12 +6,8 @@ import Login from "../views/Login.vue";
 import DefaultLayout from "../components/DefaultLayout.vue";
 
 import Dashboard from "../views/Dashboard.vue";
-import Jadwal from "../views/Jadwal.vue";
-import Rekapitulasi from "../views/Rekapitulasi.vue";
-import Profil from "../views/Profil.vue";
 
-import Absen from "../views/Absen.vue";
-import Siswa from "../views/Siswa.vue";
+import Profil from "../views/Profil.vue";
 
 const routes = [
     {
@@ -26,35 +22,9 @@ const routes = [
                 component: Dashboard,
             },
             {
-                path: "/rekapitulasi",
-                name: "Rekapitulasi",
-                component: Rekapitulasi,
-            },
-            {
-                path: "/jadwal",
-                name: "Jadwal",
-                component: Jadwal,
-            },
-            {
                 path: "/profil",
                 name: "Profil",
                 component: Profil,
-            },
-            {
-                path: "/absen/:id",
-                name: "Absensi",
-                component: Absen,
-            },
-
-            {
-                path: "/siswa",
-                name: "Siswa",
-                component: Siswa,
-            },
-            {
-                path: "/siswa/:id",
-                name: "Siswa",
-                component: Siswa,
             },
         ],
     },

@@ -8,36 +8,17 @@ const store = createStore({
             token: sessionStorage.getItem("TOKEN"),
         },
 
-        currentGuru: {
-            loading: false,
-            data: {},
-        },
-
-        kelas: {
-            loading: false,
-            data: {},
-        },
-
-        jadwal: {
-            loading: false,
-            data: {},
-        },
         siswa: {
             loading: false,
             data: [],
         },
 
-        sesi: {
+        absen: {
             loading: false,
-            data: {},
+            data: [],
         },
 
-        currentSiswa: {
-            loading: false,
-            data: {},
-        },
-
-        currentJadwal: {
+        keterangan_absensi: {
             loading: false,
             data: [],
         },
@@ -51,7 +32,7 @@ const store = createStore({
     getters: {},
     actions: {
         login({ commit }, user) {
-            return axiosClient.post("/login", user).then(({ data }) => {
+            return axiosClient.post("/loginsiswa", user).then(({ data }) => {
                 commit("setUser", data.user);
                 commit("setToken", data.token);
                 return data;
@@ -64,10 +45,41 @@ const store = createStore({
             });
         },
 
-        showSiswaByKelas({ commit }, id) {
+        getDataAbsen({ commit }, { url = null } = {}) {
+            commit("setAbsenLoading", true);
+            return axiosClient
+                .get("/dataAbsen")
+                .then((res) => {
+                    commit("setAbsen", res.data);
+                    commit("setAbsenLoading", false);
+                    return res;
+                })
+                .catch((err) => {
+                    commit("setAbsenLoading", false);
+                    throw err;
+                });
+        },
+
+        getKeteranganAbsensi({ commit }) {
+            commit("setKeteranganAbsensiLoading", true);
+            return axiosClient
+                .get(`/dataIzin`)
+                .then((res) => {
+                    commit("setKeteranganAbsensi", res.data);
+                    commit("setKeteranganAbsensiLoading", false);
+                    return res;
+                })
+                .catch((err) => {
+                    commit("setKeteranganAbsensi", err.response.data);
+                    commit("setKeteranganAbsensiLoading", false);
+                    throw err;
+                });
+        },
+
+        getSiswaProfile({ commit }) {
             commit("setSiswaLoading", true);
             return axiosClient
-                .get(`/showSiswaByKelas/${id}`)
+                .get(`/profilsiswa`)
                 .then((res) => {
                     commit("setSiswa", res.data);
                     commit("setSiswaLoading", false);
@@ -79,136 +91,27 @@ const store = createStore({
                 });
         },
 
-        showSiswa({ commit }, id) {
-            commit("setCurrentSiswaLoading", true);
-            return axiosClient
-                .get(`/siswa/${id}`)
-                .then((res) => {
-                    commit("setCurrentSiswa", res.data);
-                    commit("setCurrentSiswaLoading", false);
-                    return res;
-                })
-                .catch((err) => {
-                    commit("setCurrentSiswaLoading", false);
-                    throw err;
-                });
-        },
-
-        getGuruProfile({ commit }) {
-            commit("setCurrentGuruProfileLoading", true);
-            return axiosClient
-                .get(`/guruProfile`)
-                .then((res) => {
-                    commit("setCurrentGuru", res.data);
-                    commit("setCurrentGuruProfileLoading", false);
-                    return res;
-                })
-                .catch((err) => {
-                    commit("setCurrentGuruProfileLoading", false);
-                    throw err;
-                });
-        },
-
-        getSesi({ commit }) {
-            commit("setSesiLoading", true);
-            return axiosClient
-                .get(`/sesi`)
-                .then((res) => {
-                    commit("setSesi", res.data);
-                    commit("setSesiLoading", false);
-                    return res;
-                })
-                .catch((err) => {
-                    commit("setSesiLoading", false);
-                    throw err;
-                });
-        },
-
-        getKelasAnda({ commit }) {
-            commit("setKelasLoading", true);
-            return axiosClient
-                .get(`/kelasAnda`)
-                .then((res) => {
-                    commit("setKelas", res.data);
-                    commit("setKelasLoading", false);
-                    return res;
-                })
-                .catch((err) => {
-                    commit("setKelasLoading", false);
-                    throw err;
-                });
-        },
-
-        getJadwal({ commit }) {
-            commit("setJadwalLoading", true);
-            return axiosClient
-                .get(`/jadwal`)
-                .then((res) => {
-                    commit("setJadwal", res.data);
-                    commit("setJadwalLoading", false);
-                    return res;
-                })
-                .catch((err) => {
-                    commit("setJadwalLoading", false);
-                    throw err;
-                });
-        },
-
-        getJadwalPage({ commit }) {
-            commit("setCurrentJadwalLoading", true);
-            return axiosClient
-                .get(`/jadwalGuru`)
-                .then((res) => {
-                    commit("setCurrentJadwal", res.data);
-                    commit("setCurrentJadwalLoading", false);
-                    return res;
-                })
-                .catch((err) => {
-                    commit("setCurrentJadwalLoading", false);
-                    throw err;
-                });
-        },
-
         getUser({ commit }) {
-            return axiosClient.get("/user").then((res) => {
+            return axiosClient.get("/userSiswa").then((res) => {
                 commit("setUser", res.data);
             });
         },
 
-        getPDF({ commit }) {
-            commit("setKelasLoading", true);
-            return axiosClient
-                .get("/create-pdf-file", { responseType: "arraybuffer" })
-                .then((res) => {
-                    commit("setKelasLoading", false);
-                    let blob = new Blob([res.data], {
-                            type: "application/pdf",
-                        }),
-                        url = window.URL.createObjectURL(blob);
-
-                    let link = document.createElement("a");
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = "Rekapitulasi Presensi.pdf";
-                    link.click();
-                    window.open(link);
-                });
-        },
-
-        updateProfile({ commit }, currentGuru) {
+        updateProfile({ commit }, siswa) {
             let response;
             commit("setCurrentGuruProfileLoading", true);
             response = axiosClient
-                .put("/updateProfile", currentGuru)
+                .put("/updateProfileSiswa", siswa)
                 .then((res) => {
-                    commit("setCurrentGuruProfileLoading", false);
+                    commit("setSiswaLoading", false);
                     commit("notify", {
                         type: "success",
-                        message: res.data.message,
+                        message: "Update Profil Berhasil!",
                     });
                     return res;
                 })
                 .catch((err) => {
-                    commit("setCurrentGuruProfileLoading", false);
+                    commit("setCurrentSiswaLoading", false);
                     commit("notify", {
                         type: "failed",
                         message: err.response.data.message,
@@ -219,45 +122,23 @@ const store = createStore({
 
         updatePassword({ commit }, data) {
             let response;
-            commit("setCurrentGuruProfileLoading", true);
+            commit("setSiswaLoading", true);
             response = axiosClient
-                .post("/gantiPassword", data)
+                .post("/gantiPasswordSiswa", data)
                 .then((res) => {
-                    commit("setCurrentGuruProfileLoading", false);
                     commit("notify", {
                         type: "success",
-                        message: res.data.message,
+                        message: "Ganti Password Berhasil!",
                     });
+                    commit("setSiswaLoading", false);
                     return res;
                 })
                 .catch((err) => {
-                    commit("setCurrentGuruProfileLoading", false);
                     commit("notify", {
                         type: "failed",
                         message: err.response.data.error,
                     });
-                    throw err;
-                });
-        },
-
-        absen({ commit }, data) {
-            let response;
-
-            response = axiosClient
-                .post("/absen", data)
-                .then((res) => {
-                    commit("notify", {
-                        type: "success",
-                        message: "Presensi Berhasil Dilakukan!",
-                    });
-
-                    return res;
-                })
-                .catch((err) => {
-                    commit("notify", {
-                        type: "failed",
-                        message: err.response.data.message,
-                    });
+                    commit("setSiswaLoading", false);
                     throw err;
                 });
         },
@@ -277,30 +158,6 @@ const store = createStore({
             sessionStorage.setItem("TOKEN", token);
         },
 
-        setCurrentGuruProfileLoading: (state, loading) => {
-            state.currentGuru.loading = loading;
-        },
-
-        setCurrentGuru: (state, guru) => {
-            state.currentGuru.data = guru.data;
-        },
-
-        setKelasLoading: (state, loading) => {
-            state.kelas.loading = loading;
-        },
-
-        setKelas: (state, kelas) => {
-            state.kelas.data = kelas.data;
-        },
-
-        setJadwalLoading: (state, loading) => {
-            state.jadwal.loading = loading;
-        },
-
-        setJadwal: (state, jadwal) => {
-            state.jadwal.data = jadwal.data;
-        },
-
         setSiswaLoading: (state, loading) => {
             state.siswa.loading = loading;
         },
@@ -309,29 +166,22 @@ const store = createStore({
             state.siswa.data = siswa.data;
         },
 
-        setCurrentSiswaLoading: (state, loading) => {
-            state.currentSiswa.loading = loading;
+        setAbsenLoading: (state, loading) => {
+            state.absen.loading = loading;
         },
 
-        setCurrentSiswa: (state, currentSiswa) => {
-            state.currentSiswa.data = currentSiswa.data;
+        setAbsen: (state, absen) => {
+            state.absen.data = absen.data;
         },
 
-        setSesiLoading: (state, loading) => {
-            state.sesi.loading = loading;
+        setKeteranganAbsensiLoading: (state, loading) => {
+            state.keterangan_absensi.loading = loading;
         },
 
-        setSesi: (state, sesi) => {
-            state.sesi.data = sesi.data;
+        setKeteranganAbsensi: (state, keterangan_absensi) => {
+            state.keterangan_absensi.data = keterangan_absensi.data;
         },
 
-        setCurrentJadwalLoading: (state, loading) => {
-            state.currentJadwal.loading = loading;
-        },
-
-        setCurrentJadwal: (state, currentJadwal) => {
-            state.currentJadwal.data = currentJadwal.data;
-        },
         notify: (state, { message, type }) => {
             state.notification.show = true;
             state.notification.type = type;

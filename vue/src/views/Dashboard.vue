@@ -50,7 +50,7 @@
                                 "
                             >
                                 <PencilIcon class="h-4 w-6" />
-                                Absen
+                                Presensi
                             </button>
                         </div>
                     </div>
@@ -96,7 +96,7 @@ function toggleModal() {
 }
 
 function cek_today(value, value2) {
-    if (hari() != value) {
+    if (hari() == value) {
         router.push({
             name: "Absensi",
             params: { id: value2 },

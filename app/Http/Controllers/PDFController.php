@@ -21,9 +21,9 @@ class PDFController extends Controller
         $nomor_kelas = Kelas::where('nip_guru' , $Guru )->value('nomor_kelas');
 
         $nama_kelas = $tingkat_kelas.' '.$jurusan_kelas.' '.$nomor_kelas;
-        $Siswa = Siswa::join('absensis', 'siswas.nis_siswa', '=', 'absensis.nis_siswa')
+        $Siswa = Siswa::join('presensis', 'siswas.nis_siswa', '=', 'presensis.nis_siswa')
             ->where('siswas.kode_kelas',$Kelas )
-            ->select('siswas.nis_siswa','siswas.nama_siswa','absensis.hadir_absensi','absensis.izin_absensi','absensis.alpha_absensi',Siswa::raw("(absensis.hadir_absensi+(0.5*absensis.izin_absensi)/(absensis.hadir_absensi+absensis.izin_absensi+absensis.alpha_absensi))*100 as persentase"))
+            ->select('siswas.nis_siswa','siswas.nama_siswa','presensis.total_hadir_presensi','presensis.total_izin_presensi','presensis.total_alpha_presensi',Siswa::raw("(presensis.total_hadir_presensi+(0.5*presensis.total_izin_presensi)/(presensis.total_hadir_presensi+presensis.total_izin_presensi+presensis.total_alpha_presensi))*100 as persentase"))
             ->get();
 
         $data = [

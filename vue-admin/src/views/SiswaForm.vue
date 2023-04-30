@@ -235,12 +235,31 @@
                                 class="mt-1 focus:ring-red-500 focus:border-red-500 block w-full shadow-sm sm:text-sm border-gray-400 rounded-lg"
                             />
                         </div>
+
+                        <!-- Nomor Telepon Orang Tua -->
+                                <div class="w-full">
+                                    <label
+                                        for="no_telp_orang_tua"
+                                        class="block text-sm text-gray-700"
+                                        >Nomor Telepon Orang Tua<span class="text-red-700"
+                                            >*</span
+                                        ></label
+                                    >
+                                    <input
+                                        type="text"
+                                        name="no_telp_orang_tua"
+                                        id="tempat_lahir_siswa"
+                                        v-model="model.no_telp_orang_tua"
+                                        autocomplete="no_telp_orang_tua"
+                                        class="mt-1 focus:ring-red-500 focus:border-red-500 block w-full shadow-sm sm:text-sm border-gray-400 rounded-lg"
+                                    />
+                                </div>
                     </div>
                     <div v-if="route.params.id" class="flex space-x-4">
                         <!-- Hadir Siswa -->
                         <div>
                             <label
-                                for="hadir_absensi"
+                                for="total_hadir_presensi"
                                 class="block text-sm text-gray-700"
                                 >Hadir</label
                             >
@@ -248,8 +267,8 @@
                                 type="text"
                                 name="hadir_siswa"
                                 id="hadir_siswa"
-                                v-model="model.hadir_absensi"
-                                autocomplete="hadir_absensi"
+                                v-model="model.total_hadir_presensi"
+                                autocomplete="total_hadir_presensi"
                                 class="mt-1 focus:ring-red-500 focus:border-red-500 block w-full shadow-sm sm:text-sm border-gray-400 rounded-lg"
                             />
                         </div>
@@ -257,7 +276,7 @@
                         <!-- Izin Siswa -->
                         <div>
                             <label
-                                for="izin_absensi"
+                                for="total_izin_presensi"
                                 class="block text-sm text-gray-700"
                                 >Izin</label
                             >
@@ -265,8 +284,8 @@
                                 type="text"
                                 name="izin_siswa"
                                 id="izin_siswa"
-                                v-model="model.izin_absensi"
-                                autocomplete="izin_absensi"
+                                v-model="model.total_izin_presensi"
+                                autocomplete="total_izin_presensi"
                                 class="mt-1 focus:ring-red-500 focus:border-red-500 block w-full shadow-sm sm:text-sm border-gray-400 rounded-lg"
                             />
                         </div>
@@ -274,7 +293,7 @@
                         <!-- Alpha Siswa -->
                         <div>
                             <label
-                                for="alpha_absensi"
+                                for="total_alpha_presensi"
                                 class="block text-sm text-gray-700"
                                 >Alpha</label
                             >
@@ -282,8 +301,8 @@
                                 type="text"
                                 name="alpha_siswa"
                                 id="alpha_siswa"
-                                v-model="model.alpha_absensi"
-                                autocomplete="alpha_absensi"
+                                v-model="model.total_alpha_presensi"
+                                autocomplete="total_alpha_presensi"
                                 class="mt-1 focus:ring-red-500 focus:border-red-500 block w-full shadow-sm sm:text-sm border-gray-400 rounded-lg"
                             />
                         </div>
@@ -399,14 +418,15 @@ let model = ref({
     kode_kelas: null,
     tempat_lahir_siswa: null,
     tanggal_lahir_siswa: null,
+    no_telp_orang_tua: null,
     alamat_siswa: null,
     jenis_kelamin_siswa: null,
     email_siswa: null,
     no_telp_siswa: null,
     password_siswa: null,
-    hadir_absensi: null,
-    izin_absensi: null,
-    alpha_absensi: null,
+    total_hadir_presensi: null,
+    total_izin_presensi: null,
+    total_alpha_presensi: null,
 });
 
 let kelas = ref("");
@@ -421,19 +441,42 @@ function tambahSiswaConfirmation() {
     if (route.params.id) {
         confirmationUpdate.value = true
     } else {
-        store.dispatch("tambahSiswa", model.value).then(() => {
-            router.push({
-                name: "Siswa",
-            });
+        store.dispatch("tambahSiswa", model.value).then(res => {
+            if (res.request.status == 200) {
+                router.push({
+                    name: "Siswa",
+                });
+                store.commit("notify", {
+                    type: "success",
+                    message: 'Tambah data siswa berhasil!',
+                });
+            } else {
+                store.commit("notify", {
+                    type: "error",
+                    message: res.response.data.message,
+                });
+            }
         });
     }
 }
 
 function updateSiswa() {
-    store.dispatch("updateSiswa", model.value).then((data) => {
-        router.push({
-            name: "Siswa",
-        });
+    store.dispatch("updateSiswa", model.value).then(res => {
+        if (res.request.status == 200) {
+            router.push({
+                name: "Siswa",
+            });
+            store.commit("notify", {
+                type: "success",
+                message: 'Ubah data siswa berhasil!',
+            });
+        } else {
+            confirmationUpdate.value = false
+            store.commit("notify", {
+                type: "error",
+                message: res.response.data.message,
+            });
+        }
     });
 }
 

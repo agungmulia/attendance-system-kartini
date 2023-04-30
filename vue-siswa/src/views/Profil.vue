@@ -1,43 +1,12 @@
 <template>
-    <div class="md:pl-80 bg-gray-100 flex flex-col flex-1">
-        <div
-            class="sticky top-0 bg-white z-10 md:hidden px-4 sm:pl-3 py-4 shadow-md"
-        >
-            <div
-                class="flex items-center justify-between text-lg text-blue-900 font-bold"
-            >
-                <div class="flex items-center">
-                    <button
-                        type="button"
-                        class="-ml-4 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-xl hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-900"
-                        @click="sidebarOpen = true"
-                    >
-                        <span class="sr-only">Open sidebar</span>
-                        <Bars3Icon class="h-6 w-6" />
-                    </button>
-                    <span>Profil</span>
-                </div>
-                <router-link
-                    :to="{ name: 'Profil' }"
-                    class="hover:text-blue-800 duration-300"
-                    type="button"
-                >
-                </router-link>
-            </div>
-        </div>
-
-        <main class="flex-1 pb-6">
-            <LoadingView v-if="guruLoading" />
+    <div class=" flex flex-col flex-1">
+        <main class="flex-1 pb-6 max-w-7xl mx-auto">
+            <LoadingView v-if="loading" />
             <div v-else>
-                <div
-                    class="py-6 text-blue-900 bg-white px-10 lg:px-8 shadow-md hidden md:flex justify-between"
-                >
-                    <span class="font-bold text-xl"> Profil </span>
-                </div>
-                <div class="max-w-7 pt-6 px-10 lg:px-8 animate-fade-in-left">
+                <div class="max-w-7 pt-6 px-10 lg:px-8">
                     <div class="grid lg:flex lg:space-x-4">
                         <div
-                            class="py-2 grid lg:w-fit lg:justify-between rounded-lg shadow-sm bg-white px-4"
+                            class="  py-2 grid lg:w-fit lg:justify-between rounded-lg shadow-lg bg-white px-4"
                         >
                             <div>
                                 <div
@@ -46,8 +15,8 @@
                                     <div class="grid">
                                         <img
                                             class="w-40 h-40 rounded-full"
-                                            v-if="model.foto_guru_url"
-                                            :src="model.foto_guru_url"
+                                            v-if="model.foto_siswa_url"
+                                            :src="model.foto_siswa_url"
                                         />
 
                                         <UserCircleIcon
@@ -69,9 +38,9 @@
                                     <div class="grid">
                                         <span
                                             class="text-blue-900 font-medium text-xl"
-                                            >{{ model.nama_guru }}
+                                            >{{ model.nama_siswa }}
                                             <span class="text-green-600"
-                                                >({{ model.nip_guru }})</span
+                                                >({{ model.nis_siswa }})</span
                                             >
                                         </span>
 
@@ -82,13 +51,13 @@
                                         </span>
 
                                         <span class="text-blue-400">{{
-                                            model.jenis_kelamin_guru
+                                            model.jenis_kelamin_siswa
                                         }}</span>
                                     </div>
                                 </div>
                             </div>
                             <div
-                                class="bg-white rounded-lg shadow-sm py-4 px-4"
+                                class="bg-gray-50 rounded-lg  py-4 px-4"
                             >
                                 <div class="grid">
                                     <div>
@@ -103,11 +72,11 @@
                                             >
                                                 <span
                                                     >{{
-                                                        model.tempat_lahir_guru
+                                                        model.tempat_lahir_siswa
                                                     }},
                                                     {{
                                                         new Date(
-                                                            model.tanggal_lahir_guru
+                                                            model.tanggal_lahir_siswa
                                                         ).toLocaleDateString(
                                                             "id-ID",
                                                             {
@@ -128,7 +97,7 @@
                                             >
                                             <div class="mt-1">
                                                 <textarea
-                                                    v-model="model.alamat_guru"
+                                                    v-model="model.alamat_siswa"
                                                     id="about"
                                                     name="about"
                                                     rows="3"
@@ -139,7 +108,7 @@
                                         <div class="mt-2">
                                             <span
                                                 class="text-blue-900 text-lg font-medium"
-                                                >{{ model.email_guru }}</span
+                                                >{{ model.email_siswa }}</span
                                             >
                                         </div>
 
@@ -151,7 +120,7 @@
                                             >
                                             <input
                                                 type="text"
-                                                v-model="model.no_telp_guru"
+                                                v-model="model.no_telp_siswa"
                                                 name="no_telp"
                                                 id="no_telp"
                                                 autocomplete="no_telp"
@@ -179,24 +148,24 @@
                                     <div class="grid w-full">
                                         <img
                                             class="w-40 h-40 rounded-full"
-                                            v-if="model.foto_guru_url"
-                                            :src="model.foto_guru_url"
+                                            v-if="model.foto_siswa_url"
+                                            :src="model.foto_siswa_url"
                                         />
                                         <label class="text-sm text-gray-400"
                                             >Alamat:</label
                                         >
-                                        <span>{{ model.alamat_guru }}</span>
+                                        <span>{{ model.alamat_siswa }}</span>
                                         <label class="text-sm text-gray-400"
                                             >No Telp:</label
                                         >
-                                        <span>{{ model.no_telp_guru }} </span>
+                                        <span>{{ model.no_telp_siswa }} </span>
                                     </div>
                                 </template>
 
                                 <button
                                     type="submit"
                                     class="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-900 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                                    @click="updateProfileGuru"
+                                    @click="updateProfilesiswa"
                                 >
                                     Lanjut
                                 </button>
@@ -212,7 +181,7 @@
 
                         <form class="mt-8 lg:mt-0">
                             <div
-                                class="py-4 grid lg:justify-between space-y-4 rounded-lg shadow-sm bg-white px-4"
+                                class="py-4 grid lg:justify-between space-y-4 rounded-lg shadow-lg bg-white px-4"
                             >
                                 <div class="lg:flex">
                                     <div class="w-full">
@@ -379,7 +348,7 @@ const route = useRoute();
 
 const router = useRouter();
 
-const guruLoading = computed(() => store.state.currentGuru.loading);
+const loading = computed(() => store.state.siswa.loading);
 
 const passwordLama = ref("password");
 const passwordBaru = ref("password");
@@ -389,9 +358,9 @@ function onImageChoose(ev) {
     const file = ev.target.files[0];
     const reader = new FileReader();
     reader.onload = () => {
-        model.value.foto_guru = reader.result;
+        model.value.foto_siswa = reader.result;
 
-        model.value.foto_guru_url = reader.result;
+        model.value.foto_siswa_url = reader.result;
     };
     reader.readAsDataURL(file);
 }
@@ -424,7 +393,7 @@ function updatePassword() {
     store.dispatch("updatePassword", passwordValue.value);
 }
 
-function updateProfileGuru() {
+function updateProfilesiswa() {
     confirmation.value = false;
     store.dispatch("updateProfile", model.value);
 }
@@ -451,19 +420,19 @@ let passwordValue = ref({
 });
 
 let model = ref({
-    foto_guru: null,
-    foto_guru_url: null,
-    nama_guru: null,
-    nip_guru: null,
-    alamat_guru: null,
-    jenis_kelamin_guru: null,
-    email_guru: null,
-    no_telp_guru: null,
-    password_guru: null,
+    foto_siswa: null,
+    foto_siswa_url: null,
+    nama_siswa: null,
+    nis_siswa: null,
+    alamat_siswa: null,
+    jenis_kelamin_siswa: null,
+    email_siswa: null,
+    no_telp_siswa: null,
+    password_siswa: null,
 });
 
 watch(
-    () => store.state.currentGuru.data,
+    () => store.state.siswa.data,
     (newVal) => {
         model.value = {
             ...JSON.parse(JSON.stringify(newVal)),
@@ -473,13 +442,13 @@ watch(
 
 const sidebarOpen = sharedConstant;
 
-store.dispatch("getGuruProfile");
+store.dispatch("getSiswaProfile");
 </script>
 <script>
 export default {
     data() {
         return {
-            guru: [],
+            siswa: [],
         };
     },
 };
