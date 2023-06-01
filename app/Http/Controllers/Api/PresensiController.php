@@ -14,6 +14,24 @@ use Illuminate\Support\Facades\Http;
 
 class PresensiController extends Controller
 {
+    public function tahunPresensi($nis_siswa){
+        $created_at = Detail_Presensi::where('detail_presensis.nis_siswa', $nis_siswa)
+            ->pluck('updated_at')
+            ->map(function ($date) {
+                return $date->format('Y');
+            })
+            ->groupBy(function ($year) {
+                return $year;
+            })
+            ->keys();
+
+        if ($created_at->count() > 0) {
+            return response([
+                'message' => 'Mengambil Data Tahun Ajaran Berhasil',
+                'data' => $created_at
+            ], 200);
+        }
+    }
     public function detailPresensi(Request $request){
         $requestData = $request->all();
         $nama_siswa = $request->nama_siswa;
@@ -30,22 +48,22 @@ class PresensiController extends Controller
 
         $data = Detail_Presensi::join('siswas', 'detail_presensis.nis_siswa', '=', 'siswas.nis_siswa')
             ->whereBetween('detail_presensis.updated_at', [$tanggal_mulai_presensi, $tanggal_selesai_presensi])
-            ->where('siswas.nama_siswa', $nama_siswa)
+            ->where('siswas.nis_siswa', $nama_siswa)
             ->select('detail_presensis.*','siswas.nama_siswa')
             ->get();
         $total_hadir = Detail_Presensi::join('siswas', 'detail_presensis.nis_siswa', '=', 'siswas.nis_siswa')
             ->whereBetween('detail_presensis.updated_at', [$tanggal_mulai_presensi, $tanggal_selesai_presensi])
-            ->where('siswas.nama_siswa', $nama_siswa)
+            ->where('siswas.nis_siswa', $nama_siswa)
             ->where('detail_presensis.status_presensi','hadir')
             ->count();
         $total_izin = Detail_Presensi::join('siswas', 'detail_presensis.nis_siswa', '=', 'siswas.nis_siswa')
             ->whereBetween('detail_presensis.updated_at', [$tanggal_mulai_presensi, $tanggal_selesai_presensi])
-            ->where('siswas.nama_siswa', $nama_siswa)
+            ->where('siswas.nis_siswa', $nama_siswa)
             ->where('detail_presensis.status_presensi','izin')
             ->count();
         $total_alpha = Detail_Presensi::join('siswas', 'detail_presensis.nis_siswa', '=', 'siswas.nis_siswa')
             ->whereBetween('detail_presensis.updated_at', [$tanggal_mulai_presensi, $tanggal_selesai_presensi])
-            ->where('siswas.nama_siswa', $nama_siswa)
+            ->where('siswas.nis_siswa', $nama_siswa)
             ->where('detail_presensis.status_presensi','alpha')
             ->count();
         if(count($data)>0){
@@ -83,6 +101,7 @@ class PresensiController extends Controller
             $Siswa = Presensi::where('presensis.nis_siswa',$nis_siswa )->first();
             $data_detail_presensi = Arr::only($item,[ 'nis_siswa','keterangan_presensi']);
             $data_detail_presensi['updated_at'] = Carbon::today();
+            $data_detail_presensi['created_at'] = Carbon::today();
             $data_detail_presensi['status_presensi'] = $item['absen'];
             $data_detail_presensi['id_presensi'] = $Siswa['id'];
             
@@ -90,7 +109,7 @@ class PresensiController extends Controller
             $total_izin_presensi = Presensi::where('presensis.nis_siswa',$nis_siswa )->value('total_izin_presensi');
             $total_alpha_presensi = Presensi::where('presensis.nis_siswa',$nis_siswa )->value('total_alpha_presensi');
             
-            if($absen == 'hadir'){
+            if($absen == 'Hadir'){
                 if(Carbon::parse($hari_absen)->notEqualTo(Carbon::parse($hari_ini))){
                     Presensi::where('presensis.nis_siswa',$nis_siswa )
                         ->update([
@@ -268,7 +287,7 @@ Status presensi $nama_siswa pada waktu ".Carbon::now()->formatLocalized('%A, %d 
                 }
             }
             
-            if($absen == 'izin'){
+            if($absen == 'Izin'){
                 if(Carbon::parse($hari_absen)->notEqualTo(Carbon::parse($hari_ini))){
                     Presensi::where('presensis.nis_siswa',$nis_siswa )
                         ->update([
@@ -443,7 +462,7 @@ Status presensi $nama_siswa pada waktu ".Carbon::now()->formatLocalized('%A, %d 
                 }
             }
 
-            if($absen == 'alpha'){
+            if($absen == 'Alpha'){
                 if(Carbon::parse($hari_absen)->notEqualTo(Carbon::parse($hari_ini))){
                     Presensi::where('presensis.nis_siswa',$nis_siswa )
                         ->update([
@@ -619,13 +638,12 @@ Status presensi $nama_siswa pada waktu ".Carbon::now()->formatLocalized('%A, %d 
         }
     }
 
-    public function keteranganPresensiById(Request $request,$nis_siswa){
-        $detail_presensi = Detail_Presensi::Join('presensis', 'detail_presensis.id_presensi','=','presensis.id')
-            ->select('detail_presensis.*')
+    public function keteranganPresensiById(Request $request,$nis_siswa,$tahun){
+        $detail_presensi = Detail_Presensi::select('detail_presensis.*')
             ->where([
-                'presensis.nis_siswa' => $nis_siswa,
+                'detail_presensis.nis_siswa' => $nis_siswa,
             ])
-            ->whereNotNull('detail_presensis.keterangan_presensi')
+            ->whereYear('detail_presensis.updated_at',$tahun)
             ->get();
 
         if(count($detail_presensi)>0){

@@ -18,6 +18,7 @@
             <th>Hadir</th>
             <th>Izin</th>
             <th>Alpha</th>
+            <th>Persentase</th>
             <th>Keterangan</th>
         </tr>
         @foreach($siswa as $val)
@@ -27,8 +28,9 @@
             <td>{{ $val->total_hadir_presensi }}</td>
             <td>{{ $val->total_izin_presensi }}</td>
             <td>{{ $val->total_alpha_presensi }}</td>
+            <td>{{ $val->persentase }}%</td>
             <td>
-                @if ($val->persentase <= 75) Tidak Dapat Mengikuti Ujian @else Dapat Mengikuti Ujian @endif </td>
+                @if ($val->persentase < 75) Tidak Dapat Mengikuti Ujian @else Dapat Mengikuti Ujian @endif </td>
         </tr>
         @endforeach
     </table>

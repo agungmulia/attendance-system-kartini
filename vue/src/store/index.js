@@ -18,6 +18,21 @@ const store = createStore({
             data: {},
         },
 
+        presensiKelas: {
+            loading: false,
+            data: {},
+        },
+
+        presensiSiswa: {
+            loading: false,
+            data: {},
+        },
+
+        tahunAjaranPresensi: {
+            loading: false,
+            data: {},
+        },
+
         jadwal: {
             loading: false,
             data: {},
@@ -69,6 +84,10 @@ const store = createStore({
             });
         },
 
+        kosongkanPresensi({ commit }) {
+            commit("setPresensiKelasKosong");
+        },
+
         showSiswaByKelas({ commit }, id) {
             commit("setSiswaLoading", true);
             return axiosClient
@@ -115,20 +134,42 @@ const store = createStore({
                 });
         },
 
-        keteranganPresensiById({ commit }, id) {
-            commit("setKeteranganAbsensiLoading", true);
+        keteranganPresensiById({ commit }, nisAndTahun) {
+            const [nis, tahun] = nisAndTahun;
+            commit("setPresensiSiswaLoading", true);
             return axiosClient
-                .get(`/keteranganpresensibyid/${id}`)
+                .get(`/keteranganpresensibyid/${nis}/${tahun}`)
                 .then((res) => {
-                    commit("setKeteranganAbsensi", res.data);
-                    commit("setKeteranganAbsensiLoading", false);
+                    commit("setPresensiSiswa", res.data);
+                    commit("setPresensiSiswaLoading", false);
                     return res;
                 })
                 .catch((err) => {
-                    commit("setKeteranganAbsensi", err.response.data);
-                    commit("setKeteranganAbsensiLoading", false);
+                    commit("setPresensiSiswaLoading", false);
                     throw err;
                 });
+        },
+
+        cariPresensiKelas({ commit }, tanggal) {
+            commit("setPresensiKelasLoading", true);
+            return axiosClient
+                .get(`/cariPresensiKelas/${tanggal}`)
+                .then((res) => {
+                    commit("setPresensiKelas", res.data);
+                    commit("setPresensiKelasLoading", false);
+                    return res;
+                })
+                .catch((err) => {
+                    commit("setPresensiKelasLoading", false);
+                    throw err;
+                });
+        },
+
+        getTahunAjaranPresensi({ commit }, tahun) {
+            return axiosClient.get(`/tahunPresensi/${tahun}`).then((res) => {
+                commit("setTahunAjaranPresensi", res.data);
+                return res;
+            });
         },
 
         getGuruProfile({ commit }) {
@@ -352,8 +393,21 @@ const store = createStore({
             state.kelas.data = kelas.data;
         },
 
+        setPresensiKelasLoading: (state, loading) => {
+            state.presensiKelas.loading = loading;
+        },
+
+        setPresensiKelas: (state, presensiKelas) => {
+            state.presensiKelas.data = presensiKelas.data;
+        },
+
         setJadwalLoading: (state, loading) => {
             state.jadwal.loading = loading;
+        },
+
+        setPresensiKelasKosong: (state, presensi) => {
+            state.presensiKelas.data = {};
+            state.presensiSiswa.data = {};
         },
 
         setJadwal: (state, jadwal) => {
@@ -366,6 +420,10 @@ const store = createStore({
 
         setSiswa: (state, siswa) => {
             state.siswa.data = siswa.data;
+        },
+
+        setTahunAjaranPresensi: (state, tahunAjaranPresensi) => {
+            state.tahunAjaranPresensi.data = tahunAjaranPresensi.data;
         },
 
         setCurrentSiswaLoading: (state, loading) => {
@@ -384,12 +442,12 @@ const store = createStore({
             state.sesi.data = sesi.data;
         },
 
-        setKeteranganAbsensiLoading: (state, loading) => {
-            state.keterangan_absensi.loading = loading;
+        setPresensiSiswaLoading: (state, loading) => {
+            state.presensiSiswa.loading = loading;
         },
 
-        setKeteranganAbsensi: (state, keterangan_absensi) => {
-            state.keterangan_absensi.data = keterangan_absensi.data;
+        setPresensiSiswa: (state, presensiSiswa) => {
+            state.presensiSiswa.data = presensiSiswa.data;
         },
 
         setCurrentJadwalLoading: (state, loading) => {

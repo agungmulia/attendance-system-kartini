@@ -96,7 +96,7 @@ function toggleModal() {
 }
 
 function cek_today(value, value2) {
-    if (hari() == value) {
+    if (hari() != value) {
         router.push({
             name: "Absensi",
             params: { id: value2 },

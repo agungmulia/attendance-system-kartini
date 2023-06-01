@@ -34,6 +34,7 @@ Route::group(['middleware' => ['auth:api','guru']], function (){
     Route::get('guruProfile',[GuruController::class,'show']);
     Route::put('updateProfile',[GuruController::class,'updateProfile']);
     Route::get('kelasAnda',[GuruController::class,'kelasAnda']);
+    Route::get('/cariPresensiKelas/{id}', [GuruController::class,'cariPresensiKelas']);
 
     //sesi
     Route::get('sesi', [SesiController::class,'index']);
@@ -52,9 +53,9 @@ Route::group(['middleware' => ['auth:api','guru']], function (){
     Route::get('create-pdf-file', [PDFController::class, 'index']);
 
     Route::get('/keteranganabsensibyid/{id}', [AbsensiController::class,'keteranganAbsensiById']);
-    Route::get('/keteranganpresensibyid/{id}', [PresensiController::class,'keteranganPresensiById']);
+    Route::get('/keteranganpresensibyid/{id}/{tahun}', [PresensiController::class,'keteranganPresensiById']);
 
-
+    Route::get('/tahunPresensi/{id}', [PresensiController::class,'tahunPresensi']);
 });
 
 Route::group(['middleware' => ['auth:api','siswa']], function (){
@@ -69,6 +70,8 @@ Route::group(['middleware' => ['auth:api','siswa']], function (){
 
     Route::post('/gantiPasswordSiswa', [AuthController::class,'changePasswordSiswa']);
     Route::put('updateProfileSiswa',[SiswaController::class,'updateProfileSiswa']);
+    Route::get('presensiSiswa/{id}',[SiswaController::class,'presensiSiswa']);
+    Route::get('/tahunPresensi', [SiswaController::class,'tahunPresensi']);
 });
 
 

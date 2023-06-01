@@ -267,6 +267,7 @@
                                 type="text"
                                 name="hadir_siswa"
                                 id="hadir_siswa"
+                                disabled
                                 v-model="model.total_hadir_presensi"
                                 autocomplete="total_hadir_presensi"
                                 class="mt-1 focus:ring-red-500 focus:border-red-500 block w-full shadow-sm sm:text-sm border-gray-400 rounded-lg"
@@ -285,6 +286,7 @@
                                 name="izin_siswa"
                                 id="izin_siswa"
                                 v-model="model.total_izin_presensi"
+                                disabled
                                 autocomplete="total_izin_presensi"
                                 class="mt-1 focus:ring-red-500 focus:border-red-500 block w-full shadow-sm sm:text-sm border-gray-400 rounded-lg"
                             />
@@ -301,6 +303,7 @@
                                 type="text"
                                 name="alpha_siswa"
                                 id="alpha_siswa"
+                                disabled
                                 v-model="model.total_alpha_presensi"
                                 autocomplete="total_alpha_presensi"
                                 class="mt-1 focus:ring-red-500 focus:border-red-500 block w-full shadow-sm sm:text-sm border-gray-400 rounded-lg"

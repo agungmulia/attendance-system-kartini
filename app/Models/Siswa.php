@@ -21,6 +21,7 @@ class Siswa extends Model
         'alamat_siswa',
         'jenis_kelamin_siswa',
         'email_siswa',
+        'no_telp_orang_tua',
         'no_telp_siswa',
         'password_siswa',
         'foto_siswa'

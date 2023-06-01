@@ -7,7 +7,7 @@
                     <label
                         for="nama_siswa"
                         class="block text-sm text-gray-700"
-                        >Nama Siswa<span class="text-red-700">*</span></label
+                        >NIS Siswa<span class="text-red-700">*</span></label
                     >
                     <input
                         type="text"

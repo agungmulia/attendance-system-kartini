@@ -82,15 +82,41 @@
                             >
                         </td>
 
-                        <td
+                        <!-- <td
                             v-for="value in absensiValue"
                             :key="value"
                             class="w-20 whitespace-nowrap hidden lg:table-cell py-2"
                         >
                             <div
                                 @click="item.absen = value"
-                                class="bg-gray-300 lg:w-full h-12 cursor-pointer rounded-lg"
-                                :class="cekWarna(item.absen, value)"
+                                :class="[item.status_presensi == 'Hadir' ? 'bg-green-300 lg:w-full h-12 cursor-pointer rounded-lg' : cekWarna(item.absen, value)]"
+                
+                            ></div>
+                        </td> -->
+                        <td
+                            class="w-20 whitespace-nowrap hidden lg:table-cell py-2"
+                        >
+                            <div
+                                @click="item.absen = 'Hadir'"
+                                :class="[item.status_presensi == 'Hadir' && hariUpdate(item.updated_at) && item.absen == null ? 'bg-green-500 lg:w-full h-12 cursor-pointer rounded-lg' : item.absen == 'Hadir' ? 'bg-green-500 lg:w-full h-12 cursor-pointer rounded-lg' : 'bg-gray-300 lg:w-full h-12 cursor-pointer rounded-lg']"
+                            ></div>
+                        </td>
+                        <td
+                            class="w-20 whitespace-nowrap hidden lg:table-cell py-2"
+                        >
+                            <div
+                                @click="item.absen = 'Izin'"
+                                :class="[item.status_presensi == 'Izin' && hariUpdate(item.updated_at) && item.absen == null ? 'bg-yellow-500 lg:w-full h-12 cursor-pointer rounded-lg' : item.absen == 'Izin' ? 'bg-yellow-500 lg:w-full h-12 cursor-pointer rounded-lg' : 'bg-gray-300 lg:w-full h-12 cursor-pointer rounded-lg']"
+        
+                            ></div>
+                        </td>
+                        <td
+                            class="w-20 whitespace-nowrap hidden lg:table-cell py-2"
+                        >
+                            <div
+                                @click="item.absen = 'Alpha'"
+                                :class="[item.status_presensi == 'Alpha' && hariUpdate(item.updated_at) && item.absen == null ? 'bg-red-500 lg:w-full h-12 cursor-pointer rounded-lg' : item.absen == 'Alpha'? 'bg-red-500 lg:w-full h-12 cursor-pointer rounded-lg': 'bg-gray-300 lg:w-full h-12 cursor-pointer rounded-lg']"
+    
                             ></div>
                         </td>
 
@@ -119,7 +145,7 @@
                                 >
                                     <div
                                         @click="item.absen = value"
-                                        class="bg-gray-300 text-white grid justify-items-center py-4 lg:w-full h-12 cursor-pointer rounded-lg"
+                                        class="  bg-gray-300 text-white grid justify-items-center py-4 lg:w-full h-12 cursor-pointer rounded-lg"
                                         :class="cekWarna(item.absen, value)"
                                     >
                                         {{ value }}
@@ -156,19 +182,6 @@
 <script>
 export default {
     methods: {
-        cekWarna(val1, value) {
-            if (val1 === value) {
-                if (val1 == "hadir") {
-                    return "bg-green-400";
-                } else if (val1 == "izin") {
-                    return "bg-yellow-500";
-                } else if (val1 == "alpha") {
-                    return "bg-red-500";
-                } else {
-                    return "bg-gray-400";
-                }
-            }
-        },
     },
 };
 </script>
@@ -185,7 +198,7 @@ import { computed, ref, watch } from "vue";
 const route = useRoute();
 const router = useRouter();
 
-const absensiValue = ["hadir", "izin", "alpha"];
+const absensiValue = ["Hadir", "Izin", "Alpha"];
 
 const loading = computed(() => store.state.siswa.loading);
 
@@ -203,13 +216,29 @@ let model = ref({
 let hadiersemoea = ref(false);
 
 const open = ref(false);
+
+function cekWarna(val1, value) {
+    if (val1 === value) {
+ 
+        if (val1 == "hadir") {
+            return "bg-green-400";
+        } else if (val1 == "izin") {
+            return "bg-yellow-500";
+        } else if (val1 == "alpha") {
+            return "bg-red-500";
+        } else {
+            return "bg-gray-400";
+        }
+    }
+}
+
 function toggleModal() {
     open.value = !open.value;
 }
 
 function funcHadirSemua() {
     Object.keys(model.value).forEach(function (key) {
-        model.value[key].absen = "hadir";
+        model.value[key].absen = "Hadir";
     });
 }
 
@@ -232,9 +261,10 @@ let tableData = ref();
 
 watch(
     () =>
+    
         store.state.siswa.data.map((v) => ({
             ...v,
-            absen: null,
+            absen: hariUpdate(v.updated_at) ? v.status_presensi : null,
             keterangan_presensi: null,
         })),
     (newVal) => {
@@ -242,8 +272,10 @@ watch(
             ...JSON.parse(JSON.stringify(newVal)),
         };
 
+        console.log(newVal);
+
         hadiersemoea = computed(() =>
-            Object.values(model.value).every((el) => el.absen == "hadir")
+            Object.values(model.value).every((el) => el.absen == "Hadir")
         );
 
      

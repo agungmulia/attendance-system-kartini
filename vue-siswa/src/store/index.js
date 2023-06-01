@@ -13,6 +13,16 @@ const store = createStore({
             data: [],
         },
 
+        tahunAjaranPresensi: {
+            loading: false,
+            data: {},
+        },
+
+        presensiSiswa: {
+            loading: false,
+            data: {},
+        },
+
         absen: {
             loading: false,
             data: [],
@@ -56,6 +66,32 @@ const store = createStore({
                 })
                 .catch((err) => {
                     commit("setAbsenLoading", false);
+                    throw err;
+                });
+        },
+
+        getTahunAjaranPresensi({ commit }) {
+            return axiosClient.get(`/tahunPresensi`).then((res) => {
+                commit("setTahunAjaranPresensi", res.data);
+                return res;
+            });
+        },
+
+        kosongkanPresensi({ commit }) {
+            commit("setPresensiKosong");
+        },
+
+        presensiSiswa({ commit }, tahun) {
+            commit("setPresensiSiswaLoading", true);
+            return axiosClient
+                .get(`presensiSiswa/${tahun}`)
+                .then((res) => {
+                    commit("setPresensiSiswa", res.data);
+                    commit("setPresensiSiswaLoading", false);
+                    return res;
+                })
+                .catch((err) => {
+                    commit("setPresensiSiswaLoading", false);
                     throw err;
                 });
         },
@@ -178,8 +214,24 @@ const store = createStore({
             state.keterangan_absensi.loading = loading;
         },
 
+        setTahunAjaranPresensi: (state, tahunAjaranPresensi) => {
+            state.tahunAjaranPresensi.data = tahunAjaranPresensi.data;
+        },
+
         setKeteranganAbsensi: (state, keterangan_absensi) => {
             state.keterangan_absensi.data = keterangan_absensi.data;
+        },
+
+        setPresensiSiswaLoading: (state, loading) => {
+            state.presensiSiswa.loading = loading;
+        },
+
+        setPresensiSiswa: (state, presensiSiswa) => {
+            state.presensiSiswa.data = presensiSiswa.data;
+        },
+
+        setPresensiKosong: (state, presensiSiswa) => {
+            state.presensiSiswa.data = {};
         },
 
         notify: (state, { message, type }) => {

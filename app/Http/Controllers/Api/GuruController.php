@@ -302,7 +302,7 @@ class GuruController extends Controller
             ->where('siswas.kode_kelas',$Kelas )
             ->select('siswas.nis_siswa','siswas.nama_siswa','presensis.total_hadir_presensi','presensis.total_izin_presensi','presensis.total_alpha_presensi')
             ->get();
-        if(!is_null($Siswa)){
+        if(count($Siswa)>0){
             return response([
                 'message' => 'Mengambil Data Kelas Berhasil',
                 'data' =>$Siswa
@@ -310,6 +310,48 @@ class GuruController extends Controller
         }
         return response([
             'message' => 'Kelas Tidak Ditemukan',
+            'data' => null
+        ],404);
+    }
+
+    public function cariPresensiKelas($tanggal){
+        $user_email = Auth::user()->email;
+        $Guru = Guru::where('email_guru',$user_email )->value('nip_guru');
+        $Kelas = Kelas::where('nip_guru' , $Guru )->value('kode_kelas');
+        $Siswa = Siswa::join('detail_presensis','siswas.nis_siswa','detail_presensis.nis_siswa')
+            ->where('siswas.kode_kelas',$Kelas )
+            ->whereDate('detail_presensis.updated_at',$tanggal)
+            ->select('siswas.nis_siswa','siswas.nama_siswa','detail_presensis.*')
+            ->get();
+        if(count($Siswa)>0){
+            return response([
+                'message' => 'Mengambil Data Presensi Kelas Berhasil',
+                'data' =>$Siswa
+            ],200);
+        }
+        return response([
+            'message' => 'Presensi Tidak Ditemukan',
+            'data' => null
+        ],404);
+    }
+
+    public function cariPresensiSiswa($tanggal){
+        $user_email = Auth::user()->email;
+        $Guru = Guru::where('email_guru',$user_email )->value('nip_guru');
+        $Kelas = Kelas::where('nip_guru' , $Guru )->value('kode_kelas');
+        $Siswa = Siswa::join('detail_presensis','siswas.nis_siswa','detail_presensis.nis_siswa')
+            ->where('siswas.kode_kelas',$Kelas )
+            ->whereDate('detail_presensis.updated_at',$tanggal)
+            ->select('siswas.nis_siswa','siswas.nama_siswa','detail_presensis.*')
+            ->get();
+        if(count($Siswa)>0){
+            return response([
+                'message' => 'Mengambil Data Presensi Kelas Berhasil',
+                'data' =>$Siswa
+            ],200);
+        }
+        return response([
+            'message' => 'Presensi Tidak Ditemukan',
             'data' => null
         ],404);
     }

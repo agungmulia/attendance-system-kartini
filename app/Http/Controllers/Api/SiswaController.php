@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Presensi;
 use Validator;
 use App\Models\Keterangan_Absensi;
+use App\Models\Detail_Presensi;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -97,6 +98,49 @@ class SiswaController extends Controller
         if(count($Siswa)>0){
             return $Siswa;
         }
+    }
+
+    public function tahunPresensi(){
+        $user_email = Auth::user()->email;
+        $Siswa = Siswa::where('email_siswa',$user_email )->value('nis_siswa');
+        $created_at = Detail_Presensi::where('detail_presensis.nis_siswa', $Siswa)
+            ->pluck('updated_at')
+            ->map(function ($date) {
+                return $date->format('Y');
+            })
+            ->groupBy(function ($year) {
+                return $year;
+            })
+            ->keys();
+
+        if ($created_at->count() > 0) {
+            return response([
+                'message' => 'Mengambil Data Tahun Ajaran Berhasil',
+                'data' => $created_at
+            ], 200);
+        }
+    }
+
+    public function PresensiSiswa($tahun){
+        $user_email = Auth::user()->email;
+        $Siswa = Siswa::where('email_siswa',$user_email )->value('nis_siswa');
+        $detail_presensi = Detail_Presensi::select('detail_presensis.*')
+            ->where([
+                'detail_presensis.nis_siswa' => $Siswa,
+            ])
+            ->whereYear('detail_presensis.updated_at',$tahun)
+            ->get();
+
+        if(count($detail_presensi)>0){
+            return response([
+                'message' => 'Retrieve All Success',
+                'data' => $detail_presensi
+            ],200);
+        }
+        return response([
+            'message' => 'Empty',
+            'data' => null
+        ],400);
     }
 
     public function dataAbsen(){
